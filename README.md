@@ -134,12 +134,21 @@ python run.py           # 用 waitress 起服务，单进程自带定时任务
 
 ### Nginx + systemd（Linux 服务器）
 
-仓库里的 `deploy/` 目录放了两份可直接用的配置：
+仓库里的 `deploy/` 目录放了三份可直接用的材料：
 
 | 文件 | 用途 |
 | --- | --- |
-| `deploy/nginx.conf.example` | 站点反向代理、HTTPS、静态资源直出、安全响应头 |
+| `deploy/setup.sh` | **一键部署**：装依赖、建用户、生成配置、签发免费证书、起服务 |
+| `deploy/nginx.conf.example` | 站点反向代理、静态资源直出、安全响应头（只监听 80，443 交给 certbot） |
 | `deploy/ruankao.service` | systemd 服务单元，含开机自启、崩溃拉起、最小权限、固定时区 |
+
+自动部署（推荐，可重复执行，已有的 `.env` 和证书不会被覆盖）：
+
+```bash
+sudo ./deploy/setup.sh ruankao.example.com you@example.com
+```
+
+手工部署：
 
 ```bash
 sudo cp -r /path/to/ruankao_notice /srv/ruankao
@@ -149,7 +158,7 @@ sudo ln -s /etc/nginx/sites-available/ruankao /etc/nginx/sites-enabled/
 
 # 改三处：nginx 里的域名、service 里的 User/路径、.env 里的 SITE_URL
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d 你的域名        # 自动补全 443 与跳转
+sudo certbot --nginx -d 你的域名        # 免费证书，自动补 443 与跳转
 sudo systemctl enable --now ruankao
 ```
 
@@ -160,6 +169,82 @@ sudo systemctl enable --now ruankao
 2. **`X-Forwarded-For` 必须透传**。应用内的限流靠它取真实客户端 IP，漏配会让所有访客
    被当成同一个来源，一个人触发限额就会把全站挡在外面。
 3. **`TZ` 必须固定成 `Asia/Shanghai`**。定时任务按钟点触发，跟着宿主机漂到 UTC 就会在半夜发信。
+
+### 免费 HTTPS 证书
+
+**不用花钱，`certbot` 一条命令就够了。** 这条命令已经包含在上面两个部署流程里。
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d 你的域名
+```
+
+证书由 **Let's Encrypt** 签发，受所有主流浏览器信任，**免费证书和付费证书在浏览器眼里
+加密强度没有区别**——付费买到的是更长的有效期、企业身份认证（OV/EV）和技术支持，
+不是「更安全」。
+
+几点需要知道的事实：
+
+- **有效期 90 天**，不是一年。这不是限制，是 CA/Browser Forum 强制要求的行业趋势
+  （Let's Encrypt 已宣布未来会进一步缩短到 45 天）
+- **续期是全自动的**。`apt` 装 certbot 时会同时装上 `certbot.timer`，
+  每天检查两次、到期前 30 天自动续。**不要手工续期**，手工做迟早会忘
+- 建议每月顺手确认一次它还活着：`certbot renew --dry-run`
+- **`--redirect` 会同时配好 http → https 跳转**，不用自己写 301
+
+签发的两个前置条件（缺一不可）：
+
+1. **域名已解析到这台服务器**。ACME 校验是 CA 从公网来访问你，解析没生效就一定失败
+2. **80 端口对公网可达**。Let's Encrypt 默认走 HTTP-01 校验，
+   在 `http://你的域名/.well-known/acme-challenge/` 下取一个临时文件
+
+> **一个容易踩的顺序问题**：HSTS 响应头不要一开始就加。
+> 它一旦下发，浏览器在有效期内会**强制**走 https，此时若证书过期或续期失败，
+> 用户连「点高级、继续访问」这条路都没有了。
+> 正确顺序是：**证书 → 跳转 → 跑顺一个月 → 再开 HSTS**。
+> `deploy/nginx.conf.example` 里已经按这个顺序把 HSTS 注释掉了。
+
+#### 如果 80 端口用不了
+
+有些环境 80 端口被占用或不被放行（比如只能走内网、或云厂商拦截未备案域名）。
+这时改用 **DNS-01 校验**，完全不碰端口，代价是要给 ACME 客户端一个
+能改 DNS 解析的凭证。域名在阿里云（万网）的话用 `acme.sh` 最省事：
+
+```bash
+curl https://get.acme.sh | sh -s email=you@example.com
+~/.acme.sh/acme.sh --set-default-ca --server letsencrypt   # ← 别漏这步，见下
+
+# 在阿里云 RAM 里建一个子账号，只给云解析 DNS 的权限，不要用主账号密钥
+export Ali_Key="你的 AccessKeyId"
+export Ali_Secret="你的 AccessKeySecret"
+
+~/.acme.sh/acme.sh --issue --dns dns_ali -d 你的域名
+~/.acme.sh/acme.sh --install-cert -d 你的域名 \
+    --key-file       /etc/nginx/ssl/你的域名.key \
+    --fullchain-file /etc/nginx/ssl/你的域名.crt \
+    --reloadcmd      "systemctl reload nginx"
+```
+
+三个要点：
+
+- **`--set-default-ca --server letsencrypt` 不能漏**。`acme.sh` 默认的 CA 是 ZeroSSL
+  而不是 Let's Encrypt，不切换的话你会拿到 ZeroSSL 的证书（也能用，但和本文档说的不一致）
+- **用 RAM 子账号 + 最小权限**，别把主账号 AccessKey 交给脚本。
+  AccessKey 泄露等于整个阿里云账号失守
+- **`--reloadcmd` 必须写**。它是自动续期的最后一环——证书换了但 nginx 没重载，
+  等于没续。漏了它，故障会在第 91 天准时出现
+
+其他免费选项（一般用不上，列出来备查）：
+
+| 方案 | 有效期 | 说明 |
+| --- | --- | --- |
+| ZeroSSL | 90 天 | 有网页控制台，不喜欢命令行的可以用；支持纯 IP 证书 |
+| Buypass | 180 天 | 有效期是 Let's Encrypt 的两倍，但不支持泛域名 |
+| 阿里云个人测试证书 | 3 个月 | 每账号每年 20 张，**要求域名已完成 ICP 备案** |
+| Cloudflare | 自动 | 域名 DNS 托管到 Cloudflare 后自动签发与续期；国内访问速度另说 |
+
+**结论：这个项目用 Let's Encrypt + certbot 就够了。** 与其在证书上花钱，
+不如把精力放在邮件送达率上——邮件进垃圾箱，这服务就等于不存在。
 
 ### 部署前检查
 

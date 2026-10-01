@@ -270,7 +270,7 @@ ruankao_notice/
 ├── requirements.txt           5 个第三方依赖，没有别的
 ├── .env.example               配置模板，注释里写清了每一项的后果
 ├── Dockerfile / docker-compose.yml
-├── deploy/                    部署材料：nginx 站点配置、systemd 服务单元
+├── deploy/                    部署材料：一键脚本、nginx 站点配置、systemd 服务单元
 ├── docs/                      README 用的截图
 ├── README.md                  怎么用、怎么部署
 ├── DESIGN.md                  本文件
@@ -355,9 +355,15 @@ python -m unittest discover -s tests -v        # 30 个用例
 - [ ] DNS 的 A 记录指向服务器后，**nginx 的 `server_name` 也要写上该域名**。
       只配 DNS 不配 nginx 的表现是请求落到同机其它站点上，返回 404 或
       「证书主体名与域名不匹配」，而不是一个说得清的报错
-- [ ] 该域名已签发 TLS 证书（`certbot --nginx -d 域名` 会自动补上 443 与跳转）
+- [ ] 该域名已签发 TLS 证书（`certbot --nginx -d 域名` 会自动补上 443 与跳转）。
+      用 Let's Encrypt 就够，免费且浏览器信任度与付费证书没有区别
+- [ ] **验证证书自动续期确实在工作**：`certbot renew --dry-run`。
+      免费证书只有 90 天，而它一定会在你最忙的时候到期
+- [ ] **HSTS 暂缓**。证书 → 跳转 → 跑顺一个月 → 再开 HSTS。
+      顺序反了的话，一旦证书续期失败，用户连「点高级继续访问」的退路都没有
 - [ ] `ADMIN_TOKEN`、`SECRET_KEY` 已改为随机值
-- [ ] 服务器在境内时，域名完成 ICP 备案
+- [ ] 服务器在境内时，域名完成 ICP 备案。
+      **未备案时 80/443 会被云厂商拦截**，届时证书校验（HTTP-01）也会一起失败
 - [ ] 配好 SPF / DKIM / DMARC，否则整批邮件进垃圾箱
 - [ ] 服务器时区为 `Asia/Shanghai`，否则定时任务在错误的钟点执行
 - [ ] `data/` 目录纳入备份

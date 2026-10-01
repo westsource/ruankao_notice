@@ -1,13 +1,18 @@
 # 软考报名提醒 —— Nginx 站点配置示例
 #
-# 用法：
-#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/ruankao
-#   sudo ln -s /etc/nginx/sites-available/ruankao /etc/nginx/sites-enabled/
-#   # 把下面的 ruankao.agentctxs.com 换成你的域名
-#   sudo nginx -t && sudo systemctl reload nginx
+# ⚠️ 这份配置**只监听 80**，443 与跳转由 certbot 自动补上。
+#    这是刻意的：手写 443 块而证书还不存在时，nginx 会因为缺证书起不来，
+#    中间多出一个「先注释掉、签完再放开」的手工步骤，最容易在这一步出错。
 #
-# 然后申请证书（certbot 会自动改写本文件，补上 443 与跳转）：
-#   sudo certbot --nginx -d ruankao.agentctxs.com
+# 用法（自动，推荐）：
+#   sudo ./deploy/setup.sh 你的域名 you@example.com
+#
+# 用法（手工）：
+#   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/ruankao
+#   # 把 ruankao.agentctxs.com 换成你的域名
+#   sudo ln -s /etc/nginx/sites-available/ruankao /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#   sudo certbot --nginx -d 你的域名     # 免费证书 + 自动补 443 与跳转
 #
 # 关键点：server_name 必须与你的域名完全一致。写错或漏写的话，请求会落到
 # 同一台机器上的其它站点（或默认站点）上，表现为 404 或证书主体名不匹配。
@@ -17,53 +22,31 @@ server {
     listen [::]:80;
     server_name ruankao.agentctxs.com;
 
-    # certbot 的 HTTP-01 校验走这里，不要拦
+    # certbot 的 HTTP-01 校验走这个路径。千万别删，也别让它跳转——
+    # 校验请求走的是 http，一跳转就失败，证书就签不下来。
     location /.well-known/acme-challenge/ {
         root /var/www/html;
+        allow all;
     }
 
-    # 证书尚未就绪时先只放行校验路径，避免泄漏明文流量。
-    # 证书申请完成后，certbot 会自动插入 301 跳转，这两行可以删掉。
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
+    # 站点不发 Cookie 给第三方，也没有外链资源，这几个头开销极小。
+    # HSTS 故意不在这里，理由见下方 443 参考配置里的说明。
+    add_header X-Content-Type-Options "nosniff"    always;
+    add_header X-Frame-Options        "SAMEORIGIN" always;
+    add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
 
-server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
-    http2 on;
-    server_name ruankao.agentctxs.com;
-
-    # certbot 会自动填好下面这两行。手动部署时把路径换成自己的证书。
-    # ssl_certificate     /etc/letsencrypt/live/ruankao.agentctxs.com/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/ruankao.agentctxs.com/privkey.pem;
-
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
-    ssl_session_cache   shared:SSL:10m;
-    ssl_session_timeout 1d;
-
-    # 站点不发 Cookie 给第三方，也没有外链资源，这几个头开销极小
-    add_header Strict-Transport-Security "max-age=31536000" always;
-    add_header X-Content-Type-Options    "nosniff" always;
-    add_header X-Frame-Options           "SAMEORIGIN" always;
-    add_header Referrer-Policy           "strict-origin-when-cross-origin" always;
-
-    # 邮件里的链接会带一长串 token，别让它出现在别人服务器的日志里
     access_log /var/log/nginx/ruankao.access.log;
-
     client_max_body_size 1m;          # 表单很小，超出的一律不是正常用户
 
     location /static/ {
-        # 静态资源直接由 Nginx 送出，不经过 Python
+        # 静态资源直接由 nginx 送出，不经过 Python
         alias /srv/ruankao/ruankao/static/;
         expires 7d;
         access_log off;
     }
 
     # 后台只有一个口令保护，建议再叠一层来源限制。
-    # 取消下面两行的注释，把网段换成你自己的。
+    # 取消下面几行的注释，把网段换成你自己的。
     # location /admin {
     #     allow 203.0.113.0/24;
     #     deny  all;
@@ -74,9 +57,57 @@ server {
         proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
-        # 应用里的限流依赖这个头取真实 IP，漏配会导致所有人都被当成同一个来源
+        # 应用内的限流靠这个头取真实客户端 IP，漏配会让全站访客被当成同一个来源，
+        # 一个人触发限额就把所有人挡在外面
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 60s;
     }
 }
+
+# ---------------------------------------------------------------------------
+# 443 的参考配置
+#
+# `certbot --nginx` 跑完后会自己生成一个等效的 443 server 块并补上 301 跳转，
+# 不需要你手写。下面这份是给「想自己控制证书路径」或「用别的 CA」的人参考的。
+#
+# server {
+#     listen 443 ssl;
+#     listen [::]:443 ssl;
+#     http2 on;
+#     server_name ruankao.agentctxs.com;
+#
+#     ssl_certificate     /etc/letsencrypt/live/ruankao.agentctxs.com/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/ruankao.agentctxs.com/privkey.pem;
+#
+#     ssl_protocols       TLSv1.2 TLSv1.3;
+#     ssl_ciphers         HIGH:!aNULL:!MD5;
+#     ssl_session_cache   shared:SSL:10m;
+#     ssl_session_timeout 1d;
+#
+#     # HSTS 只写在这里，不写在 80 块里。
+#     # 原因：HSTS 一旦下发，浏览器在 max-age 内会**强制**走 https。
+#     # 若证书还没签好就先发了 HSTS，后面证书续期一旦失败，
+#     # 用户连「点高级、继续访问」这条路都没有了。
+#     # 顺序必须是：证书 → 跳转 → 确认稳定 → 再开 HSTS。
+#     # 第一次上线建议先注释掉，跑顺一个月再加。
+#     # add_header Strict-Transport-Security "max-age=31536000" always;
+#
+#     add_header X-Content-Type-Options "nosniff"    always;
+#     add_header X-Frame-Options        "SAMEORIGIN" always;
+#
+#     location /static/ {
+#         alias /srv/ruankao/ruankao/static/;
+#         expires 7d;
+#         access_log off;
+#     }
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:3000;
+#         proxy_set_header Host              $host;
+#         proxy_set_header X-Real-IP         $remote_addr;
+#         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_read_timeout 60s;
+#     }
+# }
