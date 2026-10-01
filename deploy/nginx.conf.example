@@ -5,7 +5,7 @@
 #    中间多出一个「先注释掉、签完再放开」的手工步骤，最容易在这一步出错。
 #
 # 用法（自动，推荐）：
-#   sudo ./deploy/setup.sh 你的域名 you@example.com
+#   sudo bash deploy/setup.sh 你的域名 you@example.com
 #
 # 用法（手工）：
 #   sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/ruankao

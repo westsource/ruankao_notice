@@ -3,7 +3,9 @@
 # 软考报名提醒 —— 一键部署到 Ubuntu / Debian 服务器
 #
 # 用法：
-#   sudo ./deploy/setup.sh ruankao.example.com you@example.com
+#   sudo bash deploy/setup.sh ruankao.example.com you@example.com
+#
+# 用 bash 显式调用，不要依赖可执行位——脚本从 Windows 拷过来时那个位常常会丢。
 #
 # 参数：
 #   $1  站点域名（必填）

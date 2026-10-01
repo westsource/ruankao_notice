@@ -145,8 +145,12 @@ python run.py           # 用 waitress 起服务，单进程自带定时任务
 自动部署（推荐，可重复执行，已有的 `.env` 和证书不会被覆盖）：
 
 ```bash
-sudo ./deploy/setup.sh ruankao.example.com you@example.com
+cd ruankao_notice
+sudo bash deploy/setup.sh ruankao.example.com you@example.com
 ```
+
+用 `bash` 显式调用而不是 `sudo ./deploy/setup.sh` —— 脚本从 Windows 拷过来时
+可执行位常常会丢，`bash` 调用不受影响。
 
 手工部署：
 
