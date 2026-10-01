@@ -1,9 +1,21 @@
 # 软考报名提醒
 
-选好报考省市、留一个邮箱，软考报名窗口一开放就给你发提醒。随时可以退订。
+> 选好报考省市、留一个邮箱，软考报名窗口一开放就通知你。随时可以退订。
 
-软考各省的报名期普遍只有 7 到 15 天，而且各省时间各不相同，官方往往要到临近才公布。
-每年都有人因为「没注意到」而白白错过一次机会。这个项目就为这一件事而存在。
+[![许可](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.13-3776AB.svg)](https://www.python.org/)
+[![依赖](https://img.shields.io/badge/dependencies-5-brightgreen.svg)](requirements.txt)
+[![测试](https://img.shields.io/badge/tests-30%20%E4%B8%AA%E7%94%A8%E4%BE%8B-brightgreen.svg)](tests/)
+
+![首页](docs/screenshot-home.png)
+
+## 为什么需要它
+
+软考各省的报名期普遍只有 7 到 15 天，各省时间互不相同，官方往往要到临近才公布。
+每年都有人因为「没注意到」而白白错过，而错过一次就是半年。
+
+问题的本质不是信息不存在，而是**信息存在但没有人替你盯着**。所以这个项目只做一件事：
+选好地区，窗口一开就通知你。
 
 **它只做提醒，不代办报名，不与官方有任何隶属关系。**
 
@@ -139,6 +151,9 @@ python cli.py demo       # 造一个已生效的订阅者，本地调试用
 ## 数据来源与解析规则
 
 数据来自官方报名平台 <https://bm.ruankao.org.cn/sign/welcome>。
+站内所有时间都汇总在「各省时间表」页，不订阅也能直接查：
+
+![各省时间表](docs/screenshot-schedule.png)
 
 该页面是**服务端渲染的静态 HTML**，无需登录、无需浏览器、无接口加密，一个 GET 就能拿到全量数据。
 页面结构（2026-10 实测）：
