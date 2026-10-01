@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="软考报名提醒">
+  <!--
+    与页头 brand-mark 同色（CSS 变量 accent，#0f172a），保持一致。
+    注意：XML 注释里不能出现连续两个连字符，所以这里不直接写变量名 —— 
+    写错的话整个 SVG 都不是合法 XML，浏览器会静默不显示图标。
+  -->
+  <rect width="32" height="32" rx="9" fill="#0f172a"/>
+  <!-- 一个钟面：这个东西的全部意义就是「盯着时间」 -->
+  <circle cx="16" cy="16.5" r="7.6" fill="none" stroke="#ffffff" stroke-width="2.8"/>
+  <path d="M16 11.9v4.6l3.2 2.1" fill="none" stroke="#ffffff" stroke-width="2.8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

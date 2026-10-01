@@ -108,6 +108,17 @@ def _register_jinja(app: Flask) -> None:
         )
         return app.response_class(body, mimetype="text/plain")
 
+    @app.route("/favicon.ico")
+    def favicon():
+        """兜底。
+
+        现代浏览器会优先用 HTML 里的 ``<link rel="icon">``，正常不会来请求这里；
+        但书签栏、旧浏览器、以及页面加载失败时的探测仍会打过来。
+        返回 204 而不是 404 —— 避免在控制台留下一条无意义的报错，
+        那条报错会淹没真正有用的信息。
+        """
+        return "", 204
+
 
 def _register_blueprints(app: Flask) -> None:
     from .views import admin, manage, public
