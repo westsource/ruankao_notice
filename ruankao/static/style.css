@@ -75,13 +75,15 @@ a:hover { border-bottom-color: var(--ink-3); }
   border: 0;
 }
 
-.brand-mark {
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  background: var(--accent);
-  display: inline-block;
-}
+  .brand-mark {
+    /* 品牌标记是 SVG（static/logo.svg），自带深色圆角底板。
+       这里只负责尺寸——不要给它加 background 或 border-radius，
+       那会和 SVG 自己的底板叠出双层边。 */
+    width: 22px;
+    height: 22px;
+    display: block;
+    flex: none;
+  }
 
 .site-nav a {
   margin-left: 18px;

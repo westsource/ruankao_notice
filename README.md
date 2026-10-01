@@ -1,4 +1,4 @@
-# 软考报名提醒
+# <img src="ruankao/static/logo.svg" width="30" height="30" alt=""> 软考报名提醒
 
 > 选好报考省市、留一个邮箱，软考报名窗口一开放就通知你。随时可以退订。
 
