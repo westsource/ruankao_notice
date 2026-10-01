@@ -18,6 +18,12 @@ Documentation=https://github.com/westsource/ruankao_notice
 After=network-online.target
 Wants=network-online.target
 
+# 崩溃后的重启限流。注意：这两个键属于 [Unit] 段，写进 [Service] 会被 systemd
+# 当成未知键**静默忽略**（只在 journal 里留一行 warning），限流实际不生效。
+# 实测踩过：服务照跑，但"5 分钟内最多重启 5 次"这条根本没起作用。
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
 [Service]
 Type=simple
 User=ruankao
@@ -34,10 +40,6 @@ Environment=TZ=Asia/Shanghai
 
 Restart=always
 RestartSec=5
-
-# 抓取失败等意外退出后能自动拉起，但别无限重启把日志刷爆
-StartLimitIntervalSec=300
-StartLimitBurst=5
 
 # 最小权限：这个服务只需要自己的目录和网络
 NoNewPrivileges=true
