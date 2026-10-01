@@ -2,12 +2,24 @@
 
 > 选好报考省市、留一个邮箱，软考报名窗口一开放就通知你。随时可以退订。
 
+**官网：<https://ruankao.agentctxs.com>** —— 不想自己部署的话，直接用这个，免费。
+
 [![许可](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.13-3776AB.svg)](https://www.python.org/)
 [![依赖](https://img.shields.io/badge/dependencies-5-brightgreen.svg)](requirements.txt)
 [![测试](https://img.shields.io/badge/tests-30%20%E4%B8%AA%E7%94%A8%E4%BE%8B-brightgreen.svg)](tests/)
+[![官网](https://img.shields.io/badge/%E5%AE%98%E7%BD%91-ruankao.agentctxs.com-2ea44f.svg)](https://ruankao.agentctxs.com)
 
 ![首页](docs/screenshot-home.png)
+
+## 这是什么
+
+一个**只做一件事**的小站：帮你盯住软考的报名窗口。
+
+不用注册、不用密码、不用装 App。选好你要考的省市，填个邮箱，然后就可以忘掉这回事了。
+窗口一开、快到截止，邮件会来找你。
+
+它同时是一个**可以自己部署的开源项目**。官网是它，你 clone 下来跑起来也是它，同一套代码。
 
 ## 为什么需要它
 
@@ -25,10 +37,13 @@
 - **四个提醒节点**：时间公布 / 报名开放 / 报名截止前 48 小时 / 缴费截止前 24 小时
 - **变化检测**：只有真的发生变化才发信，不会天天拿同一封邮件烦你
 - **免密码**：没有注册、没有密码。订阅靠邮件确认，日后再想管理就重新收一封登录链接
+- **不订阅也能查**：站内「各省时间表」页把全部地区的时间列在一屏里
 - **零依赖存储**：SQLite 单文件，不需要额外部署数据库
 - **开箱即用**：`git clone` 完装 5 个包就能跑，没有构建步骤
 
 ## 快速开始
+
+只想收提醒的话，直接用[官网](https://ruankao.agentctxs.com)就行，下面是**自己部署**的步骤。
 
 ```bash
 git clone https://github.com/westsource/ruankao_notice.git
@@ -117,7 +132,34 @@ docker compose up -d
 python run.py           # 用 waitress 起服务，单进程自带定时任务
 ```
 
-生产环境建议前置 Nginx 处理 HTTPS 与静态资源，并把 `/admin` 限制到可信 IP。
+### Nginx + systemd（Linux 服务器）
+
+仓库里的 `deploy/` 目录放了两份可直接用的配置：
+
+| 文件 | 用途 |
+| --- | --- |
+| `deploy/nginx.conf.example` | 站点反向代理、HTTPS、静态资源直出、安全响应头 |
+| `deploy/ruankao.service` | systemd 服务单元，含开机自启、崩溃拉起、最小权限、固定时区 |
+
+```bash
+sudo cp -r /path/to/ruankao_notice /srv/ruankao
+sudo cp deploy/ruankao.service /etc/systemd/system/
+sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/ruankao
+sudo ln -s /etc/nginx/sites-available/ruankao /etc/nginx/sites-enabled/
+
+# 改三处：nginx 里的域名、service 里的 User/路径、.env 里的 SITE_URL
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d 你的域名        # 自动补全 443 与跳转
+sudo systemctl enable --now ruankao
+```
+
+配置里有三处值得留意，写错了会出问题：
+
+1. **`server_name` 必须与域名完全一致**。写错或漏写时，请求会落到同机上的其它站点上，
+   表现为 404 或者「证书主体名与域名不匹配」——而不是一个明确的报错。
+2. **`X-Forwarded-For` 必须透传**。应用内的限流靠它取真实客户端 IP，漏配会让所有访客
+   被当成同一个来源，一个人触发限额就会把全站挡在外面。
+3. **`TZ` 必须固定成 `Asia/Shanghai`**。定时任务按钟点触发，跟着宿主机漂到 UTC 就会在半夜发信。
 
 ### 部署前检查
 

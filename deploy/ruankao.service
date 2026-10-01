@@ -1,0 +1,56 @@
+# 软考报名提醒 —— systemd 服务单元
+#
+# 用法：
+#   sudo cp deploy/ruankao.service /etc/systemd/system/
+#   # 按需修改下面的 User / WorkingDirectory / EnvironmentFile
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ruankao
+#   sudo systemctl status ruankao
+#   journalctl -u ruankao -f          # 看日志
+#
+# 部署前先确认这两件事，否则服务起来了但发不出信：
+#   1. .env 里 SITE_URL 是真实的 https 域名
+#   2. data/ 目录属于运行用户，且已纳入备份
+
+[Unit]
+Description=软考报名提醒
+Documentation=https://github.com/westsource/ruankao_notice
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ruankao
+Group=ruankao
+WorkingDirectory=/srv/ruankao
+
+EnvironmentFile=/srv/ruankao/.env
+
+# 用 waitress，单进程同时承担 HTTP 与定时任务
+ExecStart=/srv/ruankao/.venv/bin/python run.py
+
+# 时区必须固定。定时任务是按钟点触发的，跟着宿主机漂到 UTC 就会在半夜发信。
+Environment=TZ=Asia/Shanghai
+
+Restart=always
+RestartSec=5
+
+# 抓取失败等意外退出后能自动拉起，但别无限重启把日志刷爆
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# 最小权限：这个服务只需要自己的目录和网络
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ruankao
+
+[Install]
+WantedBy=multi-user.target

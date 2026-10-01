@@ -5,6 +5,11 @@
 文档里的数字和结论都对着代码核过。改代码之后请顺手回来对一遍——设计文档一旦变成「愿景」，
 比没有文档更危险。
 
+本项目的两种形态（同一套代码）：
+
+- **线上实例** <https://ruankao.agentctxs.com> —— 公开部署，只开邮件通道
+- **自部署** —— `deploy/` 下有 nginx 与 systemd 配置，步骤见 [README.md](README.md)
+
 ---
 
 ## 一、要解决的问题
@@ -265,6 +270,8 @@ ruankao_notice/
 ├── requirements.txt           5 个第三方依赖，没有别的
 ├── .env.example               配置模板，注释里写清了每一项的后果
 ├── Dockerfile / docker-compose.yml
+├── deploy/                    部署材料：nginx 站点配置、systemd 服务单元
+├── docs/                      README 用的截图
 ├── README.md                  怎么用、怎么部署
 ├── DESIGN.md                  本文件
 ├── LICENSE                    MIT
@@ -345,6 +352,10 @@ python -m unittest discover -s tests -v        # 30 个用例
 ## 十四、上线前置检查
 
 - [ ] `SITE_URL` 改成真实域名——**拼错的后果是用户点开邮件全是坏链接**
+- [ ] DNS 的 A 记录指向服务器后，**nginx 的 `server_name` 也要写上该域名**。
+      只配 DNS 不配 nginx 的表现是请求落到同机其它站点上，返回 404 或
+      「证书主体名与域名不匹配」，而不是一个说得清的报错
+- [ ] 该域名已签发 TLS 证书（`certbot --nginx -d 域名` 会自动补上 443 与跳转）
 - [ ] `ADMIN_TOKEN`、`SECRET_KEY` 已改为随机值
 - [ ] 服务器在境内时，域名完成 ICP 备案
 - [ ] 配好 SPF / DKIM / DMARC，否则整批邮件进垃圾箱
