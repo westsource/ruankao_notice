@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}订阅管理 · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:44px 0 20px;">
+  <h1>订阅管理</h1>
+  <p class="lede">
+    你正在以 <strong>{{ masked_email }}</strong> 的身份管理订阅。
+    <span class="badge {{ {'active': 'open', 'paused': 'upcoming', 'pending': 'unknown'}.get(subscriber['status'], 'closed') }}">
+      {{ {'active': '提醒进行中', 'paused': '已暂停', 'pending': '待确认', 'unsubscribed': '已退订'}.get(subscriber['status'], subscriber['status']) }}
+    </span>
+  </p>
+</section>
+
+{% if welcome %}
+<div class="notice ok" style="max-width:640px;">
+  验证通过，欢迎。以后忘了这个页面也没关系——回首页点「管理订阅」，重新用邮箱收一封登录链接就行。
+</div>
+{% endif %}
+
+{% if saved %}
+<div class="notice ok" style="max-width:640px;">已保存。</div>
+{% endif %}
+
+{% if subscriber['status'] == 'unsubscribed' %}
+<div class="notice warn" style="max-width:640px;">
+  这个订阅已经退订，不会再收到任何提醒。想恢复的话，保存地区时选上至少一个就会自动重新生效。
+</div>
+{% endif %}
+
+<div class="card" style="max-width:640px;">
+  <h2>报考地区</h2>
+  <p class="sub">取消勾选想移出的地区，保存后立即生效。</p>
+
+  <form method="post" action="{{ url_for('manage.update_regions') }}" id="manage-regions">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+
+    <div class="region-groups">
+      {% for group, items in region_groups %}
+      <fieldset class="region-group">
+        <legend>{{ group }}</legend>
+        <div class="chips">
+          {% for r in items %}
+          <label class="chip">
+            <input type="checkbox" name="region" value="{{ r.code }}"
+                   {% if r.code in selected %}checked{% endif %}>
+            <span>{{ r.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      {% endfor %}
+    </div>
+
+    <div class="toolbar">
+      <button class="btn small" type="submit">保存地区</button>
+      <button class="btn small ghost" type="button" data-bulk="all">全选</button>
+      <button class="btn small ghost" type="button" data-bulk="none">清空</button>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="max-width:640px;margin-top:16px;">
+  <h2>提醒开关</h2>
+  <p class="sub" style="margin-bottom:14px;">
+    暂停期间不会发送任何通知，订阅关系原样保留，随时可以打开。
+  </p>
+  <form method="post" action="{{ url_for('manage.update_status') }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {% if subscriber['status'] == 'active' %}
+      <button class="btn ghost small" type="submit">暂停提醒</button>
+    {% else %}
+      <button class="btn small" type="submit">恢复提醒</button>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card" style="max-width:640px;margin-top:16px;">
+  <h2>退出与删除</h2>
+  <p class="sub" style="margin-bottom:14px;">
+    退出只是忘掉这次登录，订阅仍然有效。彻底删除会把你的联系方式、
+    订阅地区和全部记录从数据库里删掉，不可恢复。
+  </p>
+  <form method="post" action="{{ url_for('public.logout') }}" style="display:inline;">
+    <button class="btn ghost small" type="submit">退出登录</button>
+  </form>
+  <form method="post" action="{{ url_for('manage.delete') }}" style="display:inline;"
+        onsubmit="return confirm('确定要彻底删除吗？此操作不可恢复。');">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="btn danger small" type="submit">删除我的全部数据</button>
+  </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}服务条款 · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+<div class="message-page" style="max-width:680px;">
+  <h1>服务条款</h1>
+  <p class="body">先说最重要的一条：<strong>本站是第三方提醒工具，不是官方，也不代办报名。</strong></p>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h2>一、我们是什么</h2>
+    <p class="sub" style="margin-bottom:0;">
+      本站是一个独立的第三方提醒服务，与「中国计算机技术职业资格网」及各省人事考试机构
+      <strong>没有任何隶属或合作关系</strong>。我们不代办报名、不提供报名咨询、不承诺任何考试结果，
+      也不收取任何费用。
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h2>二、数据来源与局限</h2>
+    <p class="sub" style="margin-bottom:0;">
+      站内所有报名与缴费时间均自动抓取自官方报名平台的公开页面，配合人工核对。
+      但程序可能因官方页面改版、网络异常、时间格式变化等原因出现延迟或错误。
+      <strong>这些时间仅供参考，不能替代你亲自查阅官方页面。</strong>
+      你需要自行核对官方发布的最终时间，并自行承担未核对的后果。
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h2>三、提醒可能失败</h2>
+    <p class="sub" style="margin-bottom:0;">
+      邮件可能因收件方的垃圾邮件策略、发信服务故障、网络问题等原因未能送达或进入垃圾箱，
+      这是任何邮件提醒服务都无法完全避免的。建议你把发件地址加入白名单，
+      同时在关键时间点自己留意官方信息。<strong>请不要把报名这件事完全托付给任何提醒工具。</strong>
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h2>四、你的责任</h2>
+    <p class="sub" style="margin-bottom:0;">
+      请提供你有权使用的邮箱地址。请不要用他人的邮箱提交订阅。
+      因你提供错误邮箱或未及时查看邮件而导致的错过，本站不承担责任。
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h2>五、服务可用性</h2>
+    <p class="sub" style="margin-bottom:0;">
+      本服务免费提供，可能出现中断、数据延迟或永久停止。我们会尽力维护，
+      但不对可用性作出任何承诺。若决定停止服务，我们会通过站内公告尽量提前告知。
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h2>六、责任限制</h2>
+    <p class="sub" style="margin-bottom:0;">
+      在法律允许的范围内，本站不对因使用或无法使用本服务而产生的任何间接损失承担责任。
+      鉴于本服务完全免费，责任上限以你实际支付的费用为限（即零元）。
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>七、开源与许可</h2>
+    <p class="sub" style="margin-bottom:0;">
+      本站代码以 MIT 许可证开源，你可以自行部署一份。
+      官方报名数据版权归其发布方所有，本站仅为便于查阅而呈现。
+    </p>
+  </div>
+</div>
+{% endblock %}

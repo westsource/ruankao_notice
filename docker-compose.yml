@@ -1,0 +1,16 @@
+services:
+  ruankao-notice:
+    build: .
+    image: ruankao-notice:latest
+    container_name: ruankao-notice
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # 定时任务依赖这个时区，别改
+      TZ: Asia/Shanghai
+    ports:
+      - "3000:3000"
+    volumes:
+      # 订阅数据挂到宿主机，容器重建不丢
+      - ./data:/app/data

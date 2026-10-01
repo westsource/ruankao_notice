@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}后台 · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:32px 0 16px;">
+  <h1 style="font-size:24px;">后台</h1>
+  <p class="lede" style="font-size:14px;">
+    {% if summary.batch %}当前批次 <strong>{{ summary.batch }}</strong>{% else %}尚未抓取过数据{% endif %}
+    {% if site_last_update %} · 数据最近核对 {{ site_last_update }}{% endif %}
+  </p>
+</section>
+
+{% if flash %}
+<div class="notice ok">{{ flash }}</div>
+{% endif %}
+
+<div class="admin-grid" style="margin-bottom:16px;">
+  <div class="metric">
+    <p class="label">有效订阅</p>
+    <p class="value">{{ stats.active or 0 }}<small>人</small></p>
+  </div>
+  <div class="metric">
+    <p class="label">待确认</p>
+    <p class="value">{{ stats.pending or 0 }}<small>人</small></p>
+  </div>
+  <div class="metric">
+    <p class="label">已暂停</p>
+    <p class="value">{{ stats.paused or 0 }}<small>人</small></p>
+  </div>
+  <div class="metric">
+    <p class="label">已退订</p>
+    <p class="value">{{ stats.unsubscribed or 0 }}<small>人</small></p>
+  </div>
+</div>
+
+<div class="split">
+  <div>
+    <div class="card">
+      <h2>手动操作</h2>
+      <p class="sub">日常由定时任务自动完成。这里是用于验证配置和应急补跑的开关。</p>
+      <div class="toolbar" style="margin:0;">
+        <form method="post" action="{{ url_for('admin.manual_scrape') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn small" type="submit">立即抓取</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.manual_notify') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn small ghost" type="submit">跑一轮提醒判定</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.run_all') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn small ghost" type="submit">抓取 + 提醒</button>
+        </form>
+      </div>
+      <p class="hint">
+        抓取约需几秒。提醒判定只会给「尚未发送过该节点」的订阅者发信，
+        重复点击不会造成重复骚扰。
+      </p>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>最近抓取记录</h2>
+      {% if runs %}
+      <div class="mini-list">
+        {% for run in runs %}
+        <div class="mini-row">
+          <span class="name">
+            <span class="badge {{ 'open' if run.ok else 'closed' }}">{{ '成功' if run.ok else '失败' }}</span>
+            {{ run.batch or '—' }}
+          </span>
+          <span class="time">{{ run.rows_parsed }} 行 / {{ run.changed }} 变化 · {{ run.finished_at or run.started_at }}</span>
+        </div>
+        {% if run.error %}
+        <pre class="log" style="margin:4px 0 8px;">{{ run.error }}</pre>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty">还没有抓取记录。点上面的「立即抓取」试一次。</div>
+      {% endif %}
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>最近发送记录</h2>
+      {% if notifications %}
+      <div class="mini-list">
+        {% for n in notifications %}
+        <div class="mini-row">
+          <span class="name">
+            <span class="badge {{ 'open' if n.status == 'sent' else 'closed' }}">{{ n.kind }}</span>
+            {{ n.region_name }} → {{ n.email }}
+          </span>
+          <span class="time">{{ n.sent_at }}</span>
+        </div>
+        {% if n.error %}
+        <pre class="log" style="margin:4px 0 8px;">{{ n.error }}</pre>
+        {% endif %}
+        {% endfor %}
+      </div>
+      <p class="hint" style="margin-top:12px;">
+        <a href="{{ url_for('admin.subscribers') }}">查看全部订阅者 →</a>
+      </p>
+      {% else %}
+      <div class="empty">还没有发送过提醒。这在报名窗口关闭期间是正常的。</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <div class="card plain">
+      <h2>通知通道</h2>
+      <div class="mini-list" style="margin-top:10px;">
+        {% for ch in channels %}
+        <div class="mini-row">
+          <span class="name">
+            <span class="badge {{ 'open' if ch.state == 'ready' else ('upcoming' if ch.state == 'incomplete' else 'unknown') }}">
+              {{ '可用' if ch.state == 'ready' else ('未配置完整' if ch.state == 'incomplete' else '未启用') }}
+            </span>
+            {{ ch.label }}
+          </span>
+          <span class="time">{{ ch.detail }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="hint" style="margin-top:12px;">
+        当前只有邮件一个通道。国内短信签名报备要求企业或个体工商户主体，
+        个人主体拿不到发送权限，所以没有做短信。
+      </p>
+    </div>
+
+    <div class="card plain" style="margin-top:16px;">
+      <h2>本批次地区状态</h2>
+      <div class="mini-list" style="margin-top:10px;">
+        <div class="mini-row"><span class="name">报名进行中</span><span class="time">{{ summary.open }}</span></div>
+        <div class="mini-row"><span class="name">尚未开始</span><span class="time">{{ summary.upcoming }}</span></div>
+        <div class="mini-row"><span class="name">已结束</span><span class="time">{{ summary.closed }}</span></div>
+        <div class="mini-row"><span class="name">时间未公布</span><span class="time">{{ summary.unknown }}</span></div>
+        <div class="mini-row"><span class="name">合计</span><span class="time">{{ summary.total }}</span></div>
+      </div>
+    </div>
+
+    <div class="card plain" style="margin-top:16px;">
+      <h2>订阅最多的地区</h2>
+      {% if top_regions %}
+      <div class="mini-list" style="margin-top:10px;">
+        {% for r in top_regions %}
+        <div class="mini-row">
+          <span class="name">{{ r.name }}</span>
+          <span class="time">{{ r.c }} 人</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty">还没有订阅数据。</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

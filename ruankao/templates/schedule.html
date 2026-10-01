@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}各省软考报名时间 · {{ settings.site_name }}{% endblock %}
+{% block description %}全国 35 个软考报名机构的报名时间与缴费时间，数据直接抓取自官方报名平台。{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+  <h1>各省软考报名时间</h1>
+  <p class="lede">
+    下面这 35 个机构是官方报名平台里各自独立的报名单位。数据由程序每天自动抓取，
+    <strong>不收录也可以直接查</strong>——我们更希望你能亲自核对一遍。
+  </p>
+  <div class="hero-facts">
+    <span class="fact">共 {{ total }} 个机构</span>
+    <span class="fact">正在报名 {{ counts.open }}</span>
+    <span class="fact">尚未开始 {{ counts.upcoming }}</span>
+    <span class="fact">已结束 {{ counts.closed }}</span>
+  </div>
+</section>
+
+{% if batch %}
+<div class="notice info">
+  当前批次 <strong>{{ batch }}</strong>
+  {% if site_last_update %}，数据最近核对于 {{ site_last_update }}{% endif %}。
+  报名时间可能随时调整，请以官方页面为准。
+</div>
+{% endif %}
+
+{% for group, items in groups.items() %}
+<section class="schedule-group">
+  <h3>{{ group }}</h3>
+  <div class="table-scroll">
+    <table class="schedule">
+      <thead>
+        <tr>
+          <th style="width:22%">地区</th>
+          <th style="width:30%">报名时间</th>
+          <th style="width:30%">缴费时间</th>
+          <th style="width:18%">状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in items %}
+        <tr>
+          <td class="region">{{ w.region_name }}</td>
+          <td class="time">{{ [w.sign_start, w.sign_end] | join(' ~ ') | shortrange }}</td>
+          <td class="time">{{ [w.pay_start, w.pay_end] | join(' ~ ') | shortrange }}</td>
+          <td><span class="badge {{ w.state }}">{{ w.state_label }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endfor %}
+
+{% if not groups %}
+  <div class="empty">还没有抓取到数据。等首次抓取完成后这里就会有内容。</div>
+{% endif %}
+
+<section class="section">
+  <div class="card">
+    <h2>不想一个个盯？</h2>
+    <p class="sub" style="margin-bottom:18px;">
+      选好你关心的地区留个邮箱，开放当天我们替你盯着。
+    </p>
+    <a class="btn" href="{{ url_for('public.index') }}#subscribe">订阅提醒</a>
+  </div>
+</section>
+
+{% endblock %}

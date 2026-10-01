@@ -1,0 +1,20 @@
+node_modules/
+data/
+var/
+.env
+.env.local
+*.log
+npm-debug.log*
+.inspect/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# AI 助手的工作记忆与项目内笔记。里面有工作过程记录和个人背景信息，
+# 不适合放进公开仓库——对外该讲的都已经写在 README.md 与 DESIGN.md 里了。
+.workbuddy/

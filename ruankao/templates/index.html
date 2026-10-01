@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="hero">
+  <h1>报名窗口最短只有 7 天，<br>别让这几天的疏忽，白费半年的准备</h1>
+  <p class="lede">
+    软考各省的报名期普遍只有 7 到 15 天，而且各省时间各不相同，官方要到临近才公布。
+    选好你要报考的地区，留一个邮箱，<strong>窗口一开放我们就通知你</strong>。
+  </p>
+  <div class="hero-facts">
+    <span class="fact">覆盖 35 个报名机构</span>
+    <span class="fact">数据直采官方平台</span>
+    <span class="fact">完全免费</span>
+    <span class="fact">随时一键退订</span>
+  </div>
+</section>
+
+<div class="split" id="subscribe">
+
+  <div class="card">
+    <h2>订阅报名提醒</h2>
+    <p class="sub">选地区、填邮箱，两步搞定。不用注册，也没有密码要记。</p>
+
+    <form method="post" action="{{ url_for('public.subscribe') }}" id="subscribe-form">
+      <div class="field">
+        <div class="field-label">报考地区 <span class="opt">可多选，不确定就都勾上</span></div>
+        <div class="region-groups">
+          {% for group, items in region_groups %}
+          <fieldset class="region-group">
+            <legend>{{ group }}</legend>
+            <div class="chips">
+              {% for r in items %}
+              <label class="chip">
+                <input type="checkbox" name="region" value="{{ r.code }}">
+                <span>{{ r.name }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% endfor %}
+        </div>
+        <div class="bulk">
+          <button type="button" data-bulk="all">全选</button>
+          <button type="button" data-bulk="none">清空</button>
+          <button type="button" data-bulk="invert">反选</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">邮箱地址</label>
+        <input type="email" id="email" name="email" required
+               placeholder="you@example.com" autocomplete="email" inputmode="email">
+        <p class="hint">
+          提交后会收到一封确认邮件，点一下里面的按钮订阅才生效。
+          这一步是为了防止有人拿你的邮箱乱订阅。
+        </p>
+      </div>
+
+      <button class="btn wide" type="submit">订阅提醒</button>
+      <p class="hint">
+        免费，随时可以退订或彻底删除。我们只用这个邮箱给你发报名提醒，
+        不作其他用途，也不会提供给任何第三方。
+      </p>
+    </form>
+  </div>
+
+  <div class="card plain">
+    {% if summary.batch %}
+      <p class="stat-batch">当前批次 · {{ summary.batch }}</p>
+
+      {% if summary.open %}
+        <div class="stat-num"><b>{{ summary.open }}</b><span>个地区正在报名</span></div>
+      {% elif summary.upcoming %}
+        <div class="stat-num"><b>{{ summary.upcoming }}</b><span>个地区即将开放</span></div>
+      {% else %}
+        <div class="stat-num"><b>0</b><span>个地区正在报名</span></div>
+        <div class="notice info" style="margin-bottom:16px;">
+          本批次报名已经全部结束。现在订阅，下一批次一开放就会通知你。
+        </div>
+      {% endif %}
+
+      {% if highlights %}
+      <div class="mini-list">
+        {% for w in highlights %}
+        <div class="mini-row">
+          <span class="name">{{ w.region_name }}
+            <span class="badge {{ w.state }}">{{ w.state_label }}</span>
+          </span>
+          <span class="time">{{ [w.sign_start, w.sign_end] | join(' ~ ') | shortrange }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="divider"></div>
+      {% endif %}
+
+      <div class="mini-list">
+        <div class="mini-row">
+          <span class="name">尚未公布时间</span>
+          <span class="time">{{ summary.unknown }} 个地区</span>
+        </div>
+        <div class="mini-row">
+          <span class="name">已订阅</span>
+          <span class="time">{{ summary.subscribers }} 人</span>
+        </div>
+        {% if site_last_update %}
+        <div class="mini-row">
+          <span class="name">数据最近核对</span>
+          <span class="time">{{ site_last_update }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="divider"></div>
+      <p class="hint" style="margin:0;">
+        <a href="{{ url_for('public.schedule') }}">查看全部 35 个地区的报名时间 →</a>
+      </p>
+    {% else %}
+      <h2>还没有数据</h2>
+      <p class="sub" style="margin-bottom:0;">
+        抓取任务尚未运行过。等第一次抓取完成后，这里会显示官方公布的最新报名时间。
+      </p>
+    {% endif %}
+  </div>
+
+</div>
+
+<section class="section">
+  <h2>它是怎么工作的</h2>
+  <p class="sub">没有黑箱，每一步你都能自己核对。</p>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>订阅，然后点一下邮件里的链接</h3>
+      <p>选好地区填上邮箱，去邮箱点确认按钮，订阅才生效。不确认就不会生效，别人也用不了你的邮箱乱订阅。</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>我们每天核对官方页面</h3>
+      <p>程序每天自动抓取官方报名平台的时间表，你选的地区一旦公布了时间或者开始报名，立刻触发通知。</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>只在关键节点打扰你</h3>
+      <p>时间公布、报名开放、报名截止前 48 小时、缴费截止前 24 小时。缴费那一次尤其重要——报完名不缴费等于没报。</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>忘记订阅过什么了？</h2>
+  <p class="sub">
+    不用翻旧邮件。<a href="{{ url_for('public.login') }}">填上邮箱收一封登录链接</a>，
+    点一下就能进管理页改地区、暂停提醒或者彻底删除。全程没有密码，也不需要注册。
+  </p>
+</section>
+
+{% endblock %}

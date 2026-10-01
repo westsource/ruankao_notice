@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}管理我的订阅 · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+
+{% if sent %}
+<div class="message-page">
+  <h1>去邮箱看看</h1>
+  <p class="body">
+    如果 <strong>{{ masked }}</strong> 在本站有订阅记录，我们刚刚发了一封带有登录链接的邮件。
+  </p>
+  <div class="hint">
+    链接 2 小时内有效，只能用一次。<br>
+    没收到？先翻一下垃圾邮件。也可能是这个邮箱从来没在本站订阅过——
+    那直接去首页订阅就好，不需要先登录。
+  </div>
+  <a class="btn" href="{{ url_for('public.index') }}#subscribe">去首页订阅</a>
+</div>
+
+{% else %}
+<section class="hero" style="padding:52px 0 24px;">
+  <h1>管理我的订阅</h1>
+  <p class="lede">
+    填上你订阅时用的邮箱，我们会发一封带登录链接的邮件。
+    点一下就能进管理页，<strong>不用密码，也没有账号</strong>。
+  </p>
+</section>
+
+<div class="card" style="max-width:460px;">
+  {% if error %}
+  <div class="notice warn">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('public.login_submit') }}">
+    <div class="field">
+      <label for="email">邮箱地址</label>
+      <input type="email" id="email" name="email" required
+             value="{{ email or '' }}" placeholder="you@example.com"
+             autocomplete="email" autofocus>
+      <p class="hint">用来收登录链接，必须和你当初订阅时填的是同一个。</p>
+    </div>
+    <button class="btn wide" type="submit">发送登录链接</button>
+  </form>
+
+  <p class="hint" style="margin-top:18px;">
+    本站没有密码，也没有注册流程。所有身份确认都靠邮件里的一次性链接完成，
+    所以不存在「忘记密码」这件事。
+  </p>
+</div>
+{% endif %}
+
+{% endblock %}

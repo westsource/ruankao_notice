@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% if purpose == "login" %}
+  <p style="margin:0 0 14px;">点下面的按钮进入你的订阅管理页，可以改报考地区、暂停提醒或退订。</p>
+{% else %}
+  <p style="margin:0 0 14px;">你正在订阅软考报名提醒。请点下面的按钮确认邮箱，订阅才会生效。</p>
+{% endif %}
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 18px;">
+  <tr><td style="border-radius:8px;background:#0f172a;">
+    <a href="{{ magic_url }}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none;">{{ button_label }}</a>
+  </td></tr>
+</table>
+
+{% if region_names or batch %}
+<div style="background:#f5f5f4;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.7;color:#44403c;margin-bottom:16px;">
+  {% if region_names %}
+  <div style="margin-bottom:4px;"><span style="color:#78716c;">报考地区</span>　{{ region_names }}</div>
+  {% endif %}
+  {% if batch %}
+  <div><span style="color:#78716c;">当前批次</span>　{{ batch }}</div>
+  {% endif %}
+</div>
+{% endif %}
+
+<p style="margin:0 0 8px;font-size:13px;color:#78716c;">
+  这个链接 {{ ttl_hours }} 小时内有效，并且只能使用一次。
+  {% if purpose == "login" %}过期了重新获取一封就行。{% endif %}
+</p>
+<p style="margin:0 0 8px;font-size:13px;color:#78716c;">
+  如果这不是你本人的操作，忽略本邮件即可——在你点开链接之前，我们不会做任何改动。
+</p>
+<p style="margin:0;font-size:13px;color:#78716c;">
+  本站没有密码，也不需要注册。所有操作都靠这封邮件里的链接完成。
+</p>
+<p style="margin:6px 0 0;font-size:12px;word-break:break-all;color:#57534e;">
+  按钮点不开的话，把下面这行地址复制到浏览器：<br>{{ magic_url }}
+</p>
+{% endblock %}

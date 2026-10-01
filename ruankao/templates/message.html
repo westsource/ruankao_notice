@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+<div class="message-page">
+  <h1>{{ title }}</h1>
+
+  {% if body %}<p class="body">{{ body }}</p>{% endif %}
+  {% if hint %}<div class="hint">{{ hint }}</div>{% endif %}
+
+  {% if back_to_form %}
+    <a class="btn" href="{{ url_for('public.index') }}#subscribe">回去重新填一次</a>
+  {% else %}
+    <a class="btn ghost" href="{{ url_for('public.index') }}">回到首页</a>
+  {% endif %}
+</div>
+{% endblock %}

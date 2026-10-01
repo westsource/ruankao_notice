@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}后台登录 · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+<div class="message-page">
+  <h1>后台</h1>
+  <p class="body">输入 ADMIN_TOKEN 进入。这个口令来自部署时的 .env 配置。</p>
+
+  {% if error %}
+  <div class="notice warn">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" style="max-width:360px;">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="field">
+      <label for="token">访问口令</label>
+      <input type="password" id="token" name="token" required autocomplete="current-password" autofocus>
+    </div>
+    <button class="btn" type="submit">进入</button>
+  </form>
+
+  <p class="hint" style="margin-top:24px;">
+    提示：如果口令还是 <code>change-me-please</code>，任何人都能进来看订阅数据。
+    请务必在 .env 里改掉它。
+  </p>
+</div>
+{% endblock %}

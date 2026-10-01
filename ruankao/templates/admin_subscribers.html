@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}订阅者 · {{ settings.site_name }}{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="padding:32px 0 16px;">
+  <h1 style="font-size:24px;">订阅者</h1>
+  <p class="lede" style="font-size:14px;">
+    最多显示最近 300 条。邮箱地址按隐私政策要求做了脱敏展示。
+  </p>
+</section>
+
+<p class="hint" style="margin-bottom:16px;">
+  <a href="{{ url_for('admin.dashboard') }}">← 回到后台概览</a>
+</p>
+
+<div class="table-scroll">
+  <table class="schedule">
+    <thead>
+      <tr>
+        <th style="width:8%">ID</th>
+        <th style="width:30%">邮箱</th>
+        <th style="width:14%">状态</th>
+        <th style="width:14%">地区数</th>
+        <th style="width:34%">订阅时间</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="time">{{ row.id }}</td>
+        <td>{{ masked(row.email or '') }}</td>
+        <td>
+          {% set tone = {'active': 'open', 'paused': 'upcoming', 'pending': 'unknown'}.get(row.status, 'closed') %}
+          <span class="badge {{ tone }}">{{ row.status }}</span>
+        </td>
+        <td class="time">{{ row.region_count }}</td>
+        <td class="time">{{ row.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if not rows %}
+<div class="empty">还没有任何订阅者。</div>
+{% endif %}
+
+{% endblock %}
