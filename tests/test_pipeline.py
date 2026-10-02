@@ -385,6 +385,41 @@ class AdminPageTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("订阅数据", resp.get_data(as_text=True))
 
+    def test_subscribers_region_filter_and_page_clamp(self):
+        """地区过滤要真的生效；页码越界收敛到最后一页，而不是空页或 500。"""
+        from ruankao.db import get_db
+        from ruankao.util import iso, new_token
+
+        with self.app.app_context():
+            conn = get_db()
+            ids = []
+            for email, code in (("gd@example.com", "guangdong"), ("zj@example.com", "zhejiang")):
+                cur = conn.execute(
+                    """INSERT INTO subscribers
+                       (email, channel, plan, status, access_token, unsubscribe_token,
+                        created_at, verified_at)
+                       VALUES (?, 'email', 'free', 'active', ?, ?, ?, ?)""",
+                    (email, new_token(20), new_token(20), iso(), iso()),
+                )
+                ids.append(cur.lastrowid)
+                conn.execute(
+                    """INSERT INTO subscriptions (subscriber_id, region_code, created_at)
+                       VALUES (?, ?, ?)""",
+                    (cur.lastrowid, code, iso()),
+                )
+            conn.commit()
+            try:
+                body = self.client.get("/admin/subscribers?region=guangdong").get_data(as_text=True)
+                self.assertIn("gd@example.com", body)
+                self.assertNotIn("zj@example.com", body)
+
+                resp = self.client.get("/admin/subscribers?page=999")
+                self.assertEqual(resp.status_code, 200)
+            finally:
+                conn.execute("DELETE FROM subscriptions WHERE subscriber_id IN (?, ?)", ids)
+                conn.execute("DELETE FROM subscribers WHERE id IN (?, ?)", ids)
+                conn.commit()
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

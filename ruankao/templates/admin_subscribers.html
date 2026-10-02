@@ -4,10 +4,15 @@
 
 {% block content %}
 
+{% set status_labels = {
+  'pending': '待确认', 'active': '提醒中', 'paused': '已暂停', 'unsubscribed': '已退订'
+} %}
+
 <section class="hero" style="padding:32px 0 16px;">
   <h1 style="font-size:24px;">订阅数据</h1>
   <p class="lede" style="font-size:14px;">
-    共 {{ total }} 条订阅记录，其中有效 {{ active }} 条。最多显示最近 300 条。
+    全部 {{ total }} 条记录，其中有效 {{ active }} 条。当前筛选命中 {{ matched }} 条，
+    第 {{ page }} / {{ pages }} 页，每页 {{ page_size }} 条。
     本页含完整邮箱地址，仅限管理员访问，请勿截图外传。
   </p>
 </section>
@@ -19,10 +24,19 @@
 <form class="filter-bar" method="get" action="{{ url_for('admin.subscribers') }}">
   <select name="status">
     <option value="">全部状态</option>
-    <option value="pending" {% if status == 'pending' %}selected{% endif %}>待确认</option>
-    <option value="active" {% if status == 'active' %}selected{% endif %}>提醒进行中</option>
-    <option value="paused" {% if status == 'paused' %}selected{% endif %}>已暂停</option>
-    <option value="unsubscribed" {% if status == 'unsubscribed' %}selected{% endif %}>已退订</option>
+    {% for value, label in status_labels.items() %}
+    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="region">
+    <option value="">全部地区</option>
+    {% for group, items in region_groups %}
+    <optgroup label="{{ group }}">
+      {% for r in items %}
+      <option value="{{ r.code }}" {% if region == r.code %}selected{% endif %}>{{ r.name }}</option>
+      {% endfor %}
+    </optgroup>
+    {% endfor %}
   </select>
   <input type="text" name="q" value="{{ q }}" placeholder="按邮箱搜索">
   <button class="btn small" type="submit">筛选</button>
@@ -30,15 +44,21 @@
 </form>
 
 <div class="table-scroll">
-  <table class="schedule">
+  <table class="schedule subscribers">
     <thead>
       <tr>
-        <th style="width:5%">ID</th>
-        <th style="width:22%">邮箱</th>
-        <th style="width:10%">状态</th>
-        <th style="width:26%">订阅地区</th>
-        <th style="width:12%">已提醒</th>
-        <th style="width:25%">订阅 / 确认时间</th>
+        <th>ID</th>
+        <th>邮箱</th>
+        <th>状态</th>
+        <th>渠道 / 计划</th>
+        <th>订阅地区</th>
+        <th>待确认地区</th>
+        <th>提醒</th>
+        <th>最近发送</th>
+        <th>回执</th>
+        <th>创建 / 确认</th>
+        <th>登录链接</th>
+        <th>IP 散列</th>
       </tr>
     </thead>
     <tbody>
@@ -48,18 +68,30 @@
         <td>{{ row.email }}</td>
         <td>
           {% set tone = {'active': 'open', 'paused': 'upcoming', 'pending': 'unknown'}.get(row.status, 'closed') %}
-          <span class="badge {{ tone }}">{{ {
-            'active': '提醒中', 'paused': '已暂停', 'pending': '待确认', 'unsubscribed': '已退订'
-          }.get(row.status, row.status) }}</span>
+          <span class="badge {{ tone }}">{{ status_labels.get(row.status, row.status) }}</span>
         </td>
-        <td>{{ row.region_names or '—' }}</td>
+        <td class="time">{{ row.channel }} / {{ row.plan }}</td>
+        <td>
+          {% if row.region_names %}{{ row.region_names }}
+          <span class="hint">（{{ row.region_count }}）</span>
+          {% else %}<span class="hint">—</span>{% endif %}
+        </td>
+        <td class="time">{{ row.pending_names or '—' }}</td>
         <td class="time">
-          {{ row.sent_count }} 次
-          {% if row.last_sent_at %}<br>{{ row.last_sent_at }}{% endif %}
+          {{ row.sent_count }} 成功
+          {% if row.failed_count %}<br><span class="badge closed">{{ row.failed_count }} 失败</span>{% endif %}
         </td>
+        <td class="time">{{ row.last_sent_at or '—' }}</td>
+        <td class="time">{{ row.feedback_text or '—' }}</td>
         <td class="time">
           {{ row.created_at }}
           {% if row.verified_at %}<br>确认 {{ row.verified_at }}{% endif %}
+        </td>
+        <td class="time">
+          {% if row.login_token_expires_at %}有效至 {{ row.login_token_expires_at }}{% else %}—{% endif %}
+        </td>
+        <td class="time" title="{{ row.ip_hash or '' }}">
+          {{ (row.ip_hash or '—')[:12] }}{% if row.ip_hash and row.ip_hash|length > 12 %}…{% endif %}
         </td>
       </tr>
       {% endfor %}
@@ -69,6 +101,30 @@
 
 {% if not rows %}
 <div class="empty">没有符合条件的订阅记录。</div>
+{% endif %}
+
+{% if pages > 1 %}
+<div class="pager">
+  {% if page > 1 %}
+  <a class="btn ghost small" href="{{ url_for('admin.subscribers', page=1, **filters) }}">« 首页</a>
+  <a class="btn ghost small" href="{{ url_for('admin.subscribers', page=page - 1, **filters) }}">← 上一页</a>
+  {% endif %}
+
+  <span class="pager-info">第 {{ page }} / {{ pages }} 页 · 命中 {{ matched }} 条</span>
+
+  {% if page < pages %}
+  <a class="btn ghost small" href="{{ url_for('admin.subscribers', page=page + 1, **filters) }}">下一页 →</a>
+  <a class="btn ghost small" href="{{ url_for('admin.subscribers', page=pages, **filters) }}">末页 »</a>
+  {% endif %}
+
+  <form class="pager-jump" method="get" action="{{ url_for('admin.subscribers') }}">
+    {% for key, value in filters.items() %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+    <input type="text" name="page" value="{{ page }}" size="3" aria-label="页码">
+    <button class="btn ghost small" type="submit">跳转</button>
+  </form>
+</div>
 {% endif %}
 
 {% endblock %}

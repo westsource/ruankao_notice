@@ -648,6 +648,28 @@ table.schedule tr:last-child td { border-bottom: 0; }
   box-shadow: 0 0 0 3px rgba(13, 148, 136, .16);
 }
 
+/* 订阅数据表：字段多，压小字号并让长字段换行，其余不折行 */
+table.subscribers { font-size: 12.5px; }
+table.subscribers th { white-space: nowrap; }
+table.subscribers th,
+table.subscribers td { padding-right: 16px; }
+table.subscribers td { white-space: nowrap; }
+table.subscribers td:nth-child(5) { white-space: normal; min-width: 170px; }
+table.subscribers td:nth-child(6) { min-width: 96px; }
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 4px;
+}
+
+.pager-info { font-size: 13px; color: var(--ink-3); }
+
+.pager-jump { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.pager-jump input[type="text"] { width: 64px; }
+
 pre.log {
   background: var(--surface-2);
   border-radius: var(--radius-sm);
