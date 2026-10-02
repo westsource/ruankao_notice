@@ -5,26 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ subject }}</title>
 </head>
-<body style="margin:0;padding:0;background:#f5f5f4;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;padding:24px 12px;">
+<body style="margin:0;padding:0;background:#f1f5f9;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 12px;">
 <tr><td align="center">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e7e5e4;border-radius:12px;overflow:hidden;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+    {# 顶部品牌色条：与站点 --brand-deep 同源，让邮件一眼认得出是本站发的 #}
+    <tr><td height="3" bgcolor="#1e3a8a" style="height:3px;line-height:3px;font-size:0;background:#1e3a8a;">&nbsp;</td></tr>
     <tr>
       <td style="padding:20px 24px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;">
-        <div style="font-size:15px;font-weight:600;color:#1c1917;">{{ site_name }}</div>
+        <div style="font-size:15px;font-weight:600;color:#1e3a8a;">{{ site_name }}</div>
       </td>
     </tr>
     <tr>
-      <td style="padding:16px 24px 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.75;color:#1c1917;">
+      <td style="padding:16px 24px 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.75;color:#0f172a;">
         {% block content %}{% endblock %}
       </td>
     </tr>
     <tr>
       <td style="padding:20px 24px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;">
-        <div style="border-top:1px solid #e7e5e4;padding-top:14px;font-size:12px;line-height:1.7;color:#78716c;">
+        <div style="border-top:1px solid #e2e8f0;padding-top:14px;font-size:12px;line-height:1.7;color:#64748b;">
           {{ footer_note }}
           {% if unsubscribe_url %}
-          <br>不想再收到提醒？<a href="{{ unsubscribe_url }}" style="color:#57534e;">一键退订</a>{% if manage_url %}，或在<a href="{{ manage_url }}" style="color:#57534e;">管理页</a>里调整{% endif %}。
+          <br>不想再收到提醒？<a href="{{ unsubscribe_url }}" style="color:#475569;">一键退订</a>{% if manage_url %}，或在<a href="{{ manage_url }}" style="color:#475569;">管理页</a>里调整{% endif %}。
           {% endif %}
           {% if operator %}
           <br>本服务由 {{ operator }} 提供。
@@ -36,7 +38,11 @@
       </td>
     </tr>
   </table>
-  <div style="max-width:560px;margin:12px auto 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:11px;line-height:1.6;color:#a8a29e;text-align:center;">
+  {# 免责声明是合规信息（本站与官方无隶属关系、时间仅供参考），不是装饰。
+     11px 小字用 #94a3b8 在 #f1f5f9 上只有 2.34:1，等于写了没人看得见。
+     同一底色下 #64748b 是 4.34（仍差一点），#5b6a80 是 5.02 —— 取后者，
+     过 AA 且仍明显淡于正文。邮件客户端不跑 CSS，只能内联写死。 #}
+  <div style="max-width:560px;margin:12px auto 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:11px;line-height:1.6;color:#5b6a80;text-align:center;">
     {{ disclaimer }}
   </div>
 </td></tr>

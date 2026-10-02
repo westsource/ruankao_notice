@@ -15,36 +15,36 @@
   <p style="margin:0 0 16px;">注意：<strong>报名信息提交了不等于报名成功，缴完费才算。</strong>每年都有人卡在这一步白考一次。</p>
 {% endif %}
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f4;border-radius:8px;margin-bottom:16px;">
-  <tr><td style="padding:14px 16px;font-family:inherit;font-size:13px;line-height:1.9;color:#44403c;">
-    <div><span style="color:#78716c;display:inline-block;width:76px;">报考地区</span>{{ region_name }}</div>
-    <div><span style="color:#78716c;display:inline-block;width:76px;">考试批次</span>{{ batch }}</div>
-    {% if sign_start %}<div><span style="color:#78716c;display:inline-block;width:76px;">报名时间</span>{{ sign_start }}{% if sign_end %} 至 {{ sign_end }}{% endif %}</div>{% endif %}
-    {% if pay_start %}<div><span style="color:#78716c;display:inline-block;width:76px;">缴费时间</span>{{ pay_start }}{% if pay_end %} 至 {{ pay_end }}{% endif %}</div>{% endif %}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;border-radius:8px;margin-bottom:16px;">
+  <tr><td style="padding:14px 16px;font-family:inherit;font-size:13px;line-height:1.9;color:#334155;">
+    <div><span style="color:#64748b;display:inline-block;width:76px;">报考地区</span>{{ region_name }}</div>
+    <div><span style="color:#64748b;display:inline-block;width:76px;">考试批次</span>{{ batch }}</div>
+    {% if sign_start %}<div><span style="color:#64748b;display:inline-block;width:76px;">报名时间</span>{{ sign_start }}{% if sign_end %} 至 {{ sign_end }}{% endif %}</div>{% endif %}
+    {% if pay_start %}<div><span style="color:#64748b;display:inline-block;width:76px;">缴费时间</span>{{ pay_start }}{% if pay_end %} 至 {{ pay_end }}{% endif %}</div>{% endif %}
   </td></tr>
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 18px;">
-  <tr><td style="border-radius:8px;background:#0f172a;">
+  <tr><td bgcolor="#1e3a8a" style="border-radius:8px;background:#1e3a8a;">
     <a href="{{ official_home }}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:500;color:#ffffff;text-decoration:none;">前往官方报名平台</a>
   </td></tr>
 </table>
 
 {% if entry_url %}
-<p style="margin:0 0 18px;font-size:13px;color:#57534e;">也可以试试<a href="{{ entry_url }}" style="color:#1d4ed8;">本省直达入口</a>（可能要求先登录官方账号）。</p>
+<p style="margin:0 0 18px;font-size:13px;color:#475569;">也可以试试<a href="{{ entry_url }}" style="color:#1d4ed8;">本省直达入口</a>（可能要求先登录官方账号）。</p>
 {% endif %}
 
 {% if show_feedback %}
-<p style="margin:0 0 8px;font-size:13px;color:#57534e;">点一下下面的按钮，我们就不再重复催你了：</p>
+<p style="margin:0 0 8px;font-size:13px;color:#475569;">点一下下面的按钮，我们就不再重复催你了：</p>
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 18px;">
   <tr>
     {% if kind == "closing" %}
-    <td style="padding-right:8px;"><a href="{{ registered_url }}" style="display:inline-block;padding:8px 16px;font-size:13px;color:#1c1917;text-decoration:none;border:1px solid #d6d3d1;border-radius:8px;">我已报名</a></td>
+    <td style="padding-right:8px;"><a href="{{ registered_url }}" style="display:inline-block;padding:8px 16px;font-size:13px;color:#0f172a;text-decoration:none;border:1px solid #cbd5e1;border-radius:8px;">我已报名</a></td>
     {% endif %}
     {% if kind == "pay_closing" %}
-    <td style="padding-right:8px;"><a href="{{ paid_url }}" style="display:inline-block;padding:8px 16px;font-size:13px;color:#1c1917;text-decoration:none;border:1px solid #d6d3d1;border-radius:8px;">我已缴费</a></td>
+    <td style="padding-right:8px;"><a href="{{ paid_url }}" style="display:inline-block;padding:8px 16px;font-size:13px;color:#0f172a;text-decoration:none;border:1px solid #cbd5e1;border-radius:8px;">我已缴费</a></td>
     {% endif %}
-    <td><a href="{{ skip_url }}" style="display:inline-block;padding:8px 16px;font-size:13px;color:#78716c;text-decoration:none;border:1px solid #e7e5e4;border-radius:8px;">这次不考，别再提醒</a></td>
+    <td><a href="{{ skip_url }}" style="display:inline-block;padding:8px 16px;font-size:13px;color:#64748b;text-decoration:none;border:1px solid #e2e8f0;border-radius:8px;">这次不考，别再提醒</a></td>
   </tr>
 </table>
 {% endif %}
