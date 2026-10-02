@@ -16,6 +16,10 @@
 <div class="notice ok">{{ flash }}</div>
 {% endif %}
 
+<p class="hint" style="margin:0 0 16px;">
+  <a href="{{ url_for('admin.subscribers') }}">查看订阅数据（完整邮箱 / 分页 / 按地区筛选）→</a>
+</p>
+
 <div class="admin-grid" style="margin-bottom:16px;">
   <div class="metric">
     <p class="label">有效订阅</p>

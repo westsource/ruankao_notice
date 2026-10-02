@@ -378,7 +378,10 @@ class AdminPageTests(unittest.TestCase):
     def test_dashboard_renders(self):
         resp = self.client.get("/admin/")
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("手动操作", resp.get_data(as_text=True))
+        body = resp.get_data(as_text=True)
+        self.assertIn("手动操作", body)
+        # 概览页要有进订阅数据页的入口，否则那个页面等于只有知道网址的人能到
+        self.assertIn('/admin/subscribers"', body)
 
     def test_subscribers_page_renders(self):
         resp = self.client.get("/admin/subscribers")
