@@ -1,20 +1,24 @@
 /* 软考报名提醒 — 样式
-   设计取向：冷灰底 + 深靛蓝品牌色，商务、克制。
+   设计取向：冷灰底 + 深松绿品牌色，清新、克制。
    不用框架，不用构建步骤，改一行刷新就能看到效果——
    开源项目最容易被劝退的地方就是构建链。
 
    配色系统（改之前先读这段）：
-   - 中性色是冷灰（slate），与靛蓝同温，不掺暖调
-   - 品牌色与 logo（static/logo.svg）同源，分五档：
-       --brand        亮靛蓝，只用于焦点环等装饰
-       --brand-ink    链接与品牌文字（浅底上对比 6.4:1）
-       --brand-deep   主按钮底色（白字对比 10.4:1）
-       --brand-strong 选中态文字与悬停（对比更高）
+   - 中性色是冷灰（slate），不掺暖调
+   - 品牌色与 logo（static/logo.svg）同源，分五档（第四版，松黛）：
+       --brand        亮松绿，只用于焦点环等装饰
+       --brand-ink    链接与品牌文字（白底上对比 5.5:1，过 AA）
+       --brand-deep   主按钮底色（白字对比 7.6:1，过 AAA）
+       --brand-strong 选中态文字与悬停（在 --brand-soft 上约 9:1）
        --brand-soft / --brand-line   浅底与描边
+     第三版的深靛蓝（#1e3a8a 一族）已整体替换；靛蓝与政务站点撞色，
+     松绿在同为深色商务底的前提下把品牌拉开了。
    - 琥珀现在是**纯语义色**（warn 一族 = 临近/需要注意），不再兼任品牌色。
      它只剩两个出处：状态徽标，以及 logo 里那个被标出来的窗口期色块。
-     深蓝底 + 琥珀强调是 logo 的既定搭配，别把琥珀又提回品牌位。
-   - 语义状态色（ok/warn/hot）独立于品牌色，只用于状态
+     松绿底 + 琥珀强调是 logo 的既定搭配（互补色，比靛蓝底上更跳），
+     别把琥珀又提回品牌位。
+   - 语义状态色（ok/warn/hot）独立于品牌色，只用于状态。
+     注意 --ok 是草绿、品牌是青绿，色相差得够开，不会混。
    - 文字主色保持深冷灰——可读性优先，不赶"彩色文字"的时髦
 */
 
@@ -35,13 +39,13 @@
   --surface: #ffffff;
   --surface-2: #f1f5f9;
 
-  /* 品牌：深靛蓝（与 logo 同源） */
-  --brand: #2563eb;
-  --brand-ink: #1d4ed8;
-  --brand-deep: #1e3a8a;
-  --brand-strong: #172554;
-  --brand-soft: #eff6ff;
-  --brand-line: #bfdbfe;
+  /* 品牌：深松绿（与 logo 同源） */
+  --brand: #0d9488;
+  --brand-ink: #0f766e;
+  --brand-deep: #115e59;
+  --brand-strong: #134e4a;
+  --brand-soft: #f0fdfa;
+  --brand-line: #99f6e4;
 
   /* 语义状态 */
   --ok: #15803d;
@@ -107,7 +111,7 @@ a:hover { color: var(--brand-deep); border-bottom-color: var(--brand-deep); }
 }
 
   .brand-mark {
-    /* 品牌标记是 SVG（static/logo.svg），自带深靛蓝圆角底板。
+    /* 品牌标记是 SVG（static/logo.svg），自带深松绿圆角底板。
        这里只负责尺寸——不要给它加 background 或 border-radius，
        那会和 SVG 自己的底板叠出双层边。 */
     width: 22px;
@@ -230,7 +234,7 @@ input[type="email"]:focus,
 input[type="text"]:focus,
 input[type="password"]:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, .16);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, .16);
 }
 
 .hint {
@@ -284,8 +288,8 @@ input[type="password"]:focus {
 
 .chip span:hover { border-color: var(--line-2); color: var(--ink); }
 
-/* 选中态：浅靛蓝底 + 靛蓝描边 + 深靛蓝文字。
-   刻意不用实心填充——一次可能勾十几个省市，满屏实心蓝块会闹；
+/* 选中态：浅松绿底 + 松绿描边 + 深松绿文字。
+   刻意不用实心填充——一次可能勾十几个省市，满屏实心色块会闹；
    浅底方案既醒目又不至于压过页面 */
 .chip input:checked + span {
   background: var(--brand-soft);
@@ -295,7 +299,7 @@ input[type="password"]:focus {
 }
 
 .chip input:focus-visible + span {
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, .3);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, .3);
 }
 
 .bulk {
