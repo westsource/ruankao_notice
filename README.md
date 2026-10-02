@@ -341,3 +341,7 @@ python -m unittest discover -s tests -v
 ## 许可
 
 MIT。官方报名数据的版权归其发布方所有，本项目仅出于方便查阅的目的进行呈现。
+
+## 作者
+
+道荣（黄超）
