@@ -25,6 +25,12 @@
 :root {
   /* 中性：冷灰 */
   --ink: #0f172a;
+  /* --ink-title 是给**大字号展示型标题**的一档，比正文墨色轻一点点。
+     29px 以上的字自身视觉重量就大，再配正文那个 #0f172a + 600，
+     整块会显得发黑发沉；降到 #1e293b + 500 就松开了
+     （在页面底 #f8fafc 上实测 13.98:1，仍远高于 AA）。
+     这一档只对大字成立——小字用它就淡得读不清，小字最浅仍只能到 --ink-3。 */
+  --ink-title: #1e293b;
   --ink-2: #475569;
   --ink-3: #64748b;
   /* --ink-4 只用于分隔点这类**装饰**，不承载任何信息。
@@ -133,9 +139,12 @@ a:hover { color: var(--brand-deep); border-bottom-color: var(--brand-deep); }
 .hero { padding: 52px 0 28px; }
 
 .hero h1 {
-  font-size: 30px;
+  /* 大字号标题用 --ink-title 而非 --ink，字重 600 → 500、30px → 29px，
+     三处一起降才看得出差别：单纯换色在 30px 的字上几乎看不出来。 */
+  color: var(--ink-title);
+  font-size: 29px;
   line-height: 1.35;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -.01em;
   margin: 0 0 14px;
 }
@@ -147,7 +156,13 @@ a:hover { color: var(--brand-deep); border-bottom-color: var(--brand-deep); }
   max-width: 640px;
 }
 
-.hero .lede strong { color: var(--ink); font-weight: 600; }
+/* 承诺句用品牌色，不用正文墨色。
+   原来它也是 #0f172a + 600，和标题一起构成两块黑加粗，整屏很沉；
+   而「窗口一开放我们就通知你」恰恰是这页真正要卖的一句，本就更该被看见——
+   转品牌色后与下面的订阅按钮同色系，视线自己会落上去。
+   lede 落在页面底色 #f8fafc 上，实测 5.23:1（纯白底为 5.47）；
+   16px 不当大字算，仍要按 AA 的 4.5 判，过线。 */
+.hero .lede strong { color: var(--brand-ink); font-weight: 600; }
 
 .hero-facts {
   display: flex;
