@@ -1,9 +1,22 @@
 /* 软考报名提醒 — 样式
-   设计取向：安静、克制、以内容为主。不用框架，不用构建步骤，
-   改一行刷新就能看到效果——开源项目最容易被劝退的地方就是构建链。
+   设计取向：暖灰底 + 琥珀品牌色，统一而克制。
+   不用框架，不用构建步骤，改一行刷新就能看到效果——
+   开源项目最容易被劝退的地方就是构建链。
+
+   配色系统（改之前先读这段）：
+   - 中性色是暖灰（stone），与琥珀同温，不掺冷调
+   - 品牌色与 logo（static/logo.svg）同源，分五档：
+       --brand        亮琥珀，只用于焦点环等装饰
+       --brand-ink    链接与品牌文字（浅底上对比 4.8:1）
+       --brand-deep   主按钮底色（白字对比 5.2:1）
+       --brand-strong 选中态文字与悬停（对比更高）
+       --brand-soft / --brand-line   浅底与描边
+   - 语义状态色（ok/warn/hot）独立于品牌色，只用于状态
+   - 文字主色保持深暖灰——可读性优先，不赶"彩色文字"的时髦
 */
 
 :root {
+  /* 中性：暖灰 */
   --ink: #1c1917;
   --ink-2: #57534e;
   --ink-3: #78716c;
@@ -13,7 +26,16 @@
   --bg: #fbfaf9;
   --surface: #ffffff;
   --surface-2: #f5f5f4;
-  --accent: #0f172a;
+
+  /* 品牌：琥珀（与 logo 同源） */
+  --brand: #f59e0b;
+  --brand-ink: #b45309;
+  --brand-deep: #c2410c;
+  --brand-strong: #9a3412;
+  --brand-soft: #fff7ed;
+  --brand-line: #fdba74;
+
+  /* 语义状态 */
   --ok: #15803d;
   --ok-bg: #f0fdf4;
   --ok-line: #bbf7d0;
@@ -23,6 +45,7 @@
   --hot: #b91c1c;
   --hot-bg: #fef2f2;
   --hot-line: #fecaca;
+
   --radius: 12px;
   --radius-sm: 8px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
@@ -43,8 +66,8 @@ body {
   background: var(--bg);
 }
 
-a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line-2); }
-a:hover { border-bottom-color: var(--ink-3); }
+a { color: var(--brand-ink); text-decoration: none; border-bottom: 1px solid var(--brand-line); }
+a:hover { color: var(--brand-deep); border-bottom-color: var(--brand-deep); }
 
 .wrap { width: 100%; max-width: 880px; margin: 0 auto; padding: 0 20px; }
 
@@ -76,7 +99,7 @@ a:hover { border-bottom-color: var(--ink-3); }
 }
 
   .brand-mark {
-    /* 品牌标记是 SVG（static/logo.svg），自带深色圆角底板。
+    /* 品牌标记是 SVG（static/logo.svg），自带琥珀色圆角底板。
        这里只负责尺寸——不要给它加 background 或 border-radius，
        那会和 SVG 自己的底板叠出双层边。 */
     width: 22px;
@@ -91,7 +114,7 @@ a:hover { border-bottom-color: var(--ink-3); }
   color: var(--ink-2);
   border: 0;
 }
-.site-nav a:hover { color: var(--ink); }
+.site-nav a:hover { color: var(--brand-ink); }
 
 /* ---------- 首页 ---------- */
 
@@ -198,8 +221,8 @@ input[type="password"] {
 input[type="email"]:focus,
 input[type="text"]:focus,
 input[type="password"]:focus {
-  border-color: var(--ink-3);
-  box-shadow: 0 0 0 3px rgba(28, 25, 23, .06);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, .18);
 }
 
 .hint {
@@ -251,14 +274,18 @@ input[type="password"]:focus {
 
 .chip span:hover { border-color: var(--line-2); color: var(--ink); }
 
+/* 选中态：浅琥珀底 + 琥珀描边 + 深琥珀文字。
+   刻意不用实心填充——一次可能勾十几个省市，满屏实心橙块会闹；
+   浅底方案既醒目又不至于压过页面 */
 .chip input:checked + span {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--brand-soft);
+  border-color: var(--brand-line);
+  color: var(--brand-strong);
+  font-weight: 500;
 }
 
 .chip input:focus-visible + span {
-  box-shadow: 0 0 0 3px rgba(28, 25, 23, .15);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, .35);
 }
 
 .bulk {
@@ -292,13 +319,15 @@ input[type="password"]:focus {
   line-height: 1;
   padding: 12px 22px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--accent);
-  background: var(--accent);
+  border: 1px solid var(--brand-deep);
+  background: var(--brand-deep);
   color: #fff;
   cursor: pointer;
-  transition: opacity .12s;
+  transition: background .12s, border-color .12s;
 }
-.btn:hover { opacity: .88; }
+/* 悬停换成实打实的深一档，而不是降不透明度——
+   后者在浅底上会露出底色，看起来像蒙了层灰 */
+.btn:hover { background: var(--brand-strong); border-color: var(--brand-strong); }
 .btn.wide { width: 100%; text-align: center; }
 
 .btn.ghost {
@@ -379,10 +408,13 @@ input[type="password"]:focus {
   white-space: nowrap;
 }
 
+/* 灰色态的两个徽标文字用 --ink-2，不用更浅的 --ink-3/--ink-4：
+   徽标是 12px 小字，--ink-3 在 --surface-2 上只有 4.4:1，差一点没过 AA 的 4.5。
+   实测踩到过，别再调回去。 */
 .badge.open { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok); }
-.badge.closed { background: var(--surface-2); color: var(--ink-3); }
+.badge.closed { background: var(--surface-2); color: var(--ink-2); }
 .badge.upcoming { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
-.badge.unknown { background: var(--surface-2); color: var(--ink-4); }
+.badge.unknown { background: var(--surface-2); color: var(--ink-2); }
 
 /* ---------- 章节 ---------- */
 
@@ -422,8 +454,8 @@ input[type="password"]:focus {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--ink-2);
+  background: var(--brand-soft);
+  color: var(--brand-strong);
   font-size: 12px;
   margin-bottom: 10px;
 }
@@ -450,7 +482,8 @@ table.schedule th {
   text-align: left;
   font-size: 12px;
   font-weight: 400;
-  color: var(--ink-4);
+  /* 表头是 12px，--ink-4 在浅底上只有 2.9:1，读不清 */
+  color: var(--ink-3);
   padding: 0 10px 8px 0;
   border-bottom: 1px solid var(--line);
 }
@@ -523,6 +556,11 @@ table.schedule tr:last-child td { border-bottom: 0; }
   margin: 0 0 8px;
   line-height: 1.7;
 }
+
+/* 页脚链接刻意压灰，不跟随全局的品牌色——
+   页脚信息密度高，跟着变橙会闹；悬停才点亮 */
+.site-footer a { color: var(--ink-3); border-bottom-color: transparent; }
+.site-footer a:hover { color: var(--brand-ink); border-bottom-color: var(--brand-line); }
 
 .foot-line.muted { color: var(--ink-4); }
 .foot-line .dot { margin: 0 6px; color: var(--ink-4); }
