@@ -49,7 +49,7 @@
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <button class="btn small ghost" type="submit">跑一轮提醒判定</button>
         </form>
-        <form method="post" action="{{ url_for('admin.run_all') }}">
+        <form method="post" action="{{ url_for('admin.manual_run_all') }}">
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <button class="btn small ghost" type="submit">抓取 + 提醒</button>
         </form>
@@ -99,9 +99,6 @@
         {% endif %}
         {% endfor %}
       </div>
-      <p class="hint" style="margin-top:12px;">
-        <a href="{{ url_for('admin.subscribers') }}">查看全部订阅者 →</a>
-      </p>
       {% else %}
       <div class="empty">还没有发送过提醒。这在报名窗口关闭期间是正常的。</div>
       {% endif %}

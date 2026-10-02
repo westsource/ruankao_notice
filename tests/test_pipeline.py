@@ -347,23 +347,43 @@ class PipelineTests(unittest.TestCase):
         services.record_feedback(sid, window_id, "skip")
         self.assertEqual(scheduler.collect_pending(self.conn), [])
 
-    def test_unsubscribe_stops_notifications(self):
+    def test_unsubscribe_stops_notifications_but_keeps_record(self):
         sid = self._make_active()
         services.unsubscribe(sid)
         self._add_window(start=self._iso(hours=-2), end=self._iso(days=5),
                          pay_end=self._iso(days=6))
         self.assertEqual(scheduler.collect_pending(self.conn), [])
+        # 取消订阅只停发提醒：记录保留，状态标记为 unsubscribed
+        row = self.conn.execute(
+            "SELECT status FROM subscribers WHERE id = ?", (sid,)
+        ).fetchone()
+        self.assertEqual(row["status"], "unsubscribed")
 
-    def test_delete_removes_everything(self):
-        sid = self._make_active()
-        services.delete_subscriber(sid)
-        self.assertEqual(
-            self.conn.execute("SELECT COUNT(*) AS c FROM subscribers").fetchone()["c"], 0
-        )
-        # 外键级联，订阅关系一并消失
-        self.assertEqual(
-            self.conn.execute("SELECT COUNT(*) AS c FROM subscriptions").fetchone()["c"], 0
-        )
+
+class AdminPageTests(unittest.TestCase):
+    """后台页面必须真的能渲染。
+
+    模板里的 ``url_for`` 端点名写错（例如 ``admin.run_all`` vs
+    ``admin.manual_run_all``）会让整个页面 500，而任何业务断言都不会碰到它——
+    只有真请求一次才暴露。这个 500 在线上真实发生过。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.app = create_app()
+        cls.client = cls.app.test_client()
+        resp = cls.client.post("/admin/login", data={"token": "test-admin-token"})
+        assert resp.status_code == 302, resp.status_code
+
+    def test_dashboard_renders(self):
+        resp = self.client.get("/admin/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("手动操作", resp.get_data(as_text=True))
+
+    def test_subscribers_page_renders(self):
+        resp = self.client.get("/admin/subscribers")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("订阅数据", resp.get_data(as_text=True))
 
 
 if __name__ == "__main__":

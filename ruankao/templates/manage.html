@@ -78,19 +78,21 @@
 </div>
 
 <div class="card" style="max-width:640px;margin-top:16px;">
-  <h2>退出与删除</h2>
+  <h2>退出与取消订阅</h2>
   <p class="sub" style="margin-bottom:14px;">
-    退出只是忘掉这次登录，订阅仍然有效。彻底删除会把你的联系方式、
-    订阅地区和全部记录从数据库里删掉，不可恢复。
+    退出只是忘掉这次登录，订阅仍然有效。取消订阅后不再收到任何提醒，
+    订阅记录会保留，日后回首页重新填一次邮箱就能恢复。
   </p>
   <form method="post" action="{{ url_for('public.logout') }}" style="display:inline;">
     <button class="btn ghost small" type="submit">退出登录</button>
   </form>
-  <form method="post" action="{{ url_for('manage.delete') }}" style="display:inline;"
-        onsubmit="return confirm('确定要彻底删除吗？此操作不可恢复。');">
+  {% if subscriber['status'] != 'unsubscribed' %}
+  <form method="post" action="{{ url_for('manage.unsubscribe') }}" style="display:inline;"
+        onsubmit="return confirm('确定要取消订阅吗？取消后不会再收到任何提醒。');">
     <input type="hidden" name="csrf" value="{{ csrf }}">
-    <button class="btn danger small" type="submit">删除我的全部数据</button>
+    <button class="btn danger small" type="submit">取消订阅</button>
   </form>
+  {% endif %}
 </div>
 
 {% endblock %}

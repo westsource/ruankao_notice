@@ -16,7 +16,6 @@ from ..db import get_db, query, query_one
 from ..notify import channel_status
 from ..scheduler import run_all, run_notify_job, run_scrape_job
 from ..security import csrf_ok, csrf_token, login_admin, logout_admin, require_admin
-from ..util import mask_email
 
 log = logging.getLogger("ruankao.views.admin")
 
@@ -128,18 +127,54 @@ def manual_run_all():
 @require_admin
 def subscribers():
     conn = get_db()
+
+    status = request.args.get("status") or ""
+    keyword = (request.args.get("q") or "").strip()
+
+    where: list[str] = []
+    params: list = []
+    if status in {"pending", "active", "paused", "unsubscribed"}:
+        where.append("s.status = ?")
+        params.append(status)
+    if keyword:
+        where.append("s.email LIKE ?")
+        params.append(f"%{keyword.lower()}%")
+    clause = f"WHERE {' AND '.join(where)}" if where else ""
+
     rows = query(
         conn,
-        """SELECT s.*, COUNT(sub.id) AS region_count
-           FROM subscribers s
-           LEFT JOIN subscriptions sub ON sub.subscriber_id = s.id
-           GROUP BY s.id
-           ORDER BY s.id DESC
-           LIMIT 300""",
+        f"""SELECT s.*,
+                   (SELECT COUNT(*) FROM subscriptions sub
+                     WHERE sub.subscriber_id = s.id)                 AS region_count,
+                   (SELECT GROUP_CONCAT(name, '、') FROM (
+                        SELECT r.name AS name
+                        FROM subscriptions sub JOIN regions r ON r.code = sub.region_code
+                        WHERE sub.subscriber_id = s.id
+                        ORDER BY r.sort_order))                      AS region_names,
+                   (SELECT COUNT(*) FROM notify_log n
+                     WHERE n.subscriber_id = s.id AND n.status = 'sent') AS sent_count,
+                   (SELECT MAX(n.sent_at) FROM notify_log n
+                     WHERE n.subscriber_id = s.id AND n.status = 'sent') AS last_sent_at
+              FROM subscribers s
+              {clause}
+             ORDER BY s.id DESC
+             LIMIT 300""",
+        params,
     )
+
+    counts = query_one(
+        conn,
+        """SELECT COUNT(*) AS total,
+                  SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active
+             FROM subscribers""",
+    )
+
     return render_template(
         "admin_subscribers.html",
         rows=[dict(r) for r in rows],
-        masked=mask_email,
+        total=counts["total"] if counts else 0,
+        active=counts["active"] if counts else 0,
+        status=status,
+        q=keyword,
         csrf=csrf_token("admin"),
     )

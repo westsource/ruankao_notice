@@ -1,42 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}订阅者 · {{ settings.site_name }}{% endblock %}
+{% block title %}订阅数据 · {{ settings.site_name }}{% endblock %}
 
 {% block content %}
 
 <section class="hero" style="padding:32px 0 16px;">
-  <h1 style="font-size:24px;">订阅者</h1>
+  <h1 style="font-size:24px;">订阅数据</h1>
   <p class="lede" style="font-size:14px;">
-    最多显示最近 300 条。邮箱地址按隐私政策要求做了脱敏展示。
+    共 {{ total }} 条订阅记录，其中有效 {{ active }} 条。最多显示最近 300 条。
+    本页含完整邮箱地址，仅限管理员访问，请勿截图外传。
   </p>
 </section>
 
-<p class="hint" style="margin-bottom:16px;">
+<p class="hint" style="margin:0 0 14px;">
   <a href="{{ url_for('admin.dashboard') }}">← 回到后台概览</a>
 </p>
+
+<form class="filter-bar" method="get" action="{{ url_for('admin.subscribers') }}">
+  <select name="status">
+    <option value="">全部状态</option>
+    <option value="pending" {% if status == 'pending' %}selected{% endif %}>待确认</option>
+    <option value="active" {% if status == 'active' %}selected{% endif %}>提醒进行中</option>
+    <option value="paused" {% if status == 'paused' %}selected{% endif %}>已暂停</option>
+    <option value="unsubscribed" {% if status == 'unsubscribed' %}selected{% endif %}>已退订</option>
+  </select>
+  <input type="text" name="q" value="{{ q }}" placeholder="按邮箱搜索">
+  <button class="btn small" type="submit">筛选</button>
+  <a class="btn ghost small" href="{{ url_for('admin.subscribers') }}">重置</a>
+</form>
 
 <div class="table-scroll">
   <table class="schedule">
     <thead>
       <tr>
-        <th style="width:8%">ID</th>
-        <th style="width:30%">邮箱</th>
-        <th style="width:14%">状态</th>
-        <th style="width:14%">地区数</th>
-        <th style="width:34%">订阅时间</th>
+        <th style="width:5%">ID</th>
+        <th style="width:22%">邮箱</th>
+        <th style="width:10%">状态</th>
+        <th style="width:26%">订阅地区</th>
+        <th style="width:12%">已提醒</th>
+        <th style="width:25%">订阅 / 确认时间</th>
       </tr>
     </thead>
     <tbody>
       {% for row in rows %}
       <tr>
         <td class="time">{{ row.id }}</td>
-        <td>{{ masked(row.email or '') }}</td>
+        <td>{{ row.email }}</td>
         <td>
           {% set tone = {'active': 'open', 'paused': 'upcoming', 'pending': 'unknown'}.get(row.status, 'closed') %}
-          <span class="badge {{ tone }}">{{ row.status }}</span>
+          <span class="badge {{ tone }}">{{ {
+            'active': '提醒中', 'paused': '已暂停', 'pending': '待确认', 'unsubscribed': '已退订'
+          }.get(row.status, row.status) }}</span>
         </td>
-        <td class="time">{{ row.region_count }}</td>
-        <td class="time">{{ row.created_at }}</td>
+        <td>{{ row.region_names or '—' }}</td>
+        <td class="time">
+          {{ row.sent_count }} 次
+          {% if row.last_sent_at %}<br>{{ row.last_sent_at }}{% endif %}
+        </td>
+        <td class="time">
+          {{ row.created_at }}
+          {% if row.verified_at %}<br>确认 {{ row.verified_at }}{% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -44,7 +68,7 @@
 </div>
 
 {% if not rows %}
-<div class="empty">还没有任何订阅者。</div>
+<div class="empty">没有符合条件的订阅记录。</div>
 {% endif %}
 
 {% endblock %}

@@ -325,13 +325,6 @@ def unsubscribe(subscriber_id: int) -> None:
     conn.commit()
 
 
-def delete_subscriber(subscriber_id: int) -> None:
-    """彻底删除。《个人信息保护法》要求提供删除途径，这个是硬的，不能省。"""
-    conn = get_db()
-    conn.execute("DELETE FROM subscribers WHERE id = ?", (subscriber_id,))
-    conn.commit()
-
-
 def record_feedback(subscriber_id: int, window_id: int, action: str) -> None:
     if action not in {"registered", "paid", "skip"}:
         raise ServiceError("无效的操作。")

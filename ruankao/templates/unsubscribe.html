@@ -20,8 +20,9 @@
   </form>
 
   <p class="hint" style="margin-top:26px;">
-    退订不等于删除数据。如果你希望我们彻底删掉保存的邮箱记录，
-    退订后用邮件里的管理页链接操作，或直接联系我们。
+    退订不等于删除数据：你的订阅记录会保留，但不再用于发送。
+    如需彻底删除邮箱与订阅记录，请
+    {%- if settings.site_contact_email %} 邮件联系我们 {{ settings.site_contact_email }}。{% else %} 联系站点管理员。{% endif %}
   </p>
 </div>
 {% endblock %}

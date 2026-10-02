@@ -620,6 +620,34 @@ table.schedule tr:last-child td { border-bottom: 0; }
 
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 4px; }
 
+/* ---------- 后台 ---------- */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.filter-bar input[type="text"] { width: auto; flex: 0 1 260px; }
+
+.filter-bar select {
+  font: inherit;
+  font-size: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.filter-bar select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, .16);
+}
+
 pre.log {
   background: var(--surface-2);
   border-radius: var(--radius-sm);

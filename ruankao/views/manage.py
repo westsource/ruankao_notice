@@ -106,19 +106,11 @@ def update_status():
     return redirect(url_for("manage.page", saved=1))
 
 
-@bp.post("/delete")
-def delete():
+@bp.post("/unsubscribe")
+def unsubscribe():
+    """管理页里取消订阅：只停发提醒，记录保留，日后可重新订阅。"""
     subscriber, error = _guarded()
     if error:
         return error
-    services.delete_subscriber(subscriber["id"])
-    from ..security import logout_subscriber
-
-    logout_subscriber()
-    return render_template(
-        "message.html",
-        title="已彻底删除",
-        body="你的联系方式、订阅地区和全部记录已经从数据库里删掉了，无法恢复。",
-        hint="想重新订阅的话，回首页再填一次就行。",
-        tone="ok",
-    )
+    services.unsubscribe(subscriber["id"])
+    return redirect(url_for("manage.page"))

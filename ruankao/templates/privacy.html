@@ -5,7 +5,7 @@
 {% block content %}
 <div class="message-page" style="max-width:680px;">
   <h1>隐私政策</h1>
-  <p class="body">说人话版：我们只收你的邮箱，只用来发报名提醒，不卖给任何人，你随时可以删掉。</p>
+  <p class="body">说人话版：我们只收你的邮箱，只用来发报名提醒，不卖给任何人，你随时可以取消订阅。</p>
 
   <div class="card" style="margin-bottom:16px;">
     <h2>一、我们收集什么</h2>
@@ -54,8 +54,8 @@
   <div class="card" style="margin-bottom:16px;">
     <h2>四、保存多久</h2>
     <p class="sub" style="margin-bottom:0;">
-      在你保持订阅期间持续保存。你退订后，记录会保留但不再用于发送；
-      你选择「彻底删除」后，邮箱地址与订阅记录会立即从数据库中移除，无法恢复。
+      在你保持订阅期间持续保存。你取消订阅后，记录会保留但不再用于发送；
+      如需彻底删除邮箱与订阅记录，可邮件联系管理员，核实后我们会在数据库里删除，无法恢复。
     </p>
   </div>
 
@@ -65,12 +65,13 @@
       <div class="mini-row"><span class="name">查阅与更正</span><span class="time">管理页链接</span></div>
       <div class="mini-row"><span class="name">暂停收取提醒</span><span class="time">管理页一键操作</span></div>
       <div class="mini-row"><span class="name">退订</span><span class="time">每封邮件底部</span></div>
-      <div class="mini-row"><span class="name">彻底删除</span><span class="time">管理页一键操作</span></div>
+      <div class="mini-row"><span class="name">取消订阅</span><span class="time">管理页一键操作</span></div>
+      <div class="mini-row"><span class="name">彻底删除</span><span class="time">邮件联系管理员</span></div>
     </div>
     <p class="hint" style="margin-top:14px;">
-      以上全部自助完成，不需要联系任何人。管理页链接在每封提醒邮件的底部。
+      查阅、更正、暂停、退订都可以自助完成，不需要联系任何人。管理页链接在每封提醒邮件的底部。
       {% if settings.site_contact_email %}
-      如遇问题可邮件联系 {{ settings.site_contact_email }}。
+      如需彻底删除邮箱与订阅记录，请邮件联系 {{ settings.site_contact_email }}，核实后我们会删除。
       {% endif %}
     </p>
   </div>
